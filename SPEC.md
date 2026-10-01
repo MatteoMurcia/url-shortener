@@ -1,9 +1,9 @@
 # URL Shortener — primera entrega
 
-Estado: T01 autorizado e implementado. TypeScript y Node.js elegidos por Matteo.
+Estado: T01 y T02 implementados. TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: implementar únicamente T01 y conectar el repositorio a
-GitHub, según petición del usuario. Las tareas T02–T12 siguen pendientes.
+Modo de trabajo actual: T02 autorizado por el usuario; aplicación mínima con
+React y Express. Las tareas T03–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
@@ -44,8 +44,8 @@ Esta demo local no se presentará como un servicio público listo para producci�
 - Docker Compose para la base de datos local.
 
 Las versiones exactas restantes se fijarán en el archivo de bloqueo al implementar.
-Una aplicación backend servirá la API y los archivos frontend en producción;
-Vite reenviará las rutas de backend durante el desarrollo.
+Una aplicación backend sirve la API y los archivos frontend en producción;
+en desarrollo incorpora Vite como middleware, usando un solo puerto y origen.
 
 ## Contrato y criterios de aceptación
 
@@ -85,9 +85,9 @@ compose.yaml     PostgreSQL local
 
 ## Comandos previstos
 
-`npm ci`, `npm run typecheck` y `npm run lint` ya funcionan tras T01. El resto
-de los comandos de esta lista se añadirá en las tareas correspondientes; todavía
-no hay aplicación, base de datos, build ni suite de pruebas.
+T02 añade `npm run dev`, `npm run build`, `npm start` y `npm test` a los comandos
+de T01. La aplicación inicial y las pruebas de salud/configuración funcionan;
+los comandos de base de datos, integración con PostgreSQL y E2E quedan pendientes.
 
 ```sh
 npm ci

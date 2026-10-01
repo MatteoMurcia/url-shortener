@@ -1,7 +1,7 @@
 # Plan: URL Shortener
 
-Estado: T01 autorizado e implementado, con conexión a GitHub solicitada por el
-usuario. T02–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
+Estado: T01 y T02 implementados, con repositorio conectado a GitHub.
+T03–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
 Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
 
 ## Objetivo y alcance
@@ -80,8 +80,10 @@ El contrato funcional está en SPEC.md. Refinamientos propuestos:
   credenciales. No se presenta como comprobación de que el destino sea seguro.
 - JSON limitado a 8 KiB. `BASE_URL` configura el origen público; `DATABASE_URL`
   y `PORT` se validan al arrancar. Credenciales únicamente en el entorno.
-- En desarrollo, Vite reenvía `/api` y `/r` a Express. El enlace generado usa el
-  origen de Vite. En el build local, Express sirve también el frontend.
+- En desarrollo, Express incorpora Vite como middleware y atiende primero la
+  API. Ambos comparten origen y puerto; no se necesita un proxy. En el build
+  local, Express sirve los archivos estáticos de `dist/client`. El futuro
+  `BASE_URL` usará ese origen compartido.
 - Las rutas API y de redirección se resuelven antes de servir la interfaz;
   una ruta API desconocida no devuelve accidentalmente el HTML de React.
 
@@ -167,5 +169,5 @@ distintas; el repositorio puede documentarse antes de desplegar el servicio.
 - ¿La IA formará parte del producto, del proceso de desarrollo o de ambos?
 - ¿Qué dedicación y presupuesto condicionarán las entregas posteriores?
 
-El usuario ha autorizado T01 y la conexión a GitHub. Esa autorización no inicia
-automáticamente T02 ni las entregas posteriores; avanzar según sus peticiones.
+El usuario ha autorizado T01, la conexión a GitHub y T02. Esa autorización no
+inicia automáticamente T03 ni las entregas posteriores; avanzar según sus peticiones.

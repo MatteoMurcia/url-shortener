@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01 autorizado y completado; T02–T12 pendientes.
+Estado: T01 y T02 completados; T03–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01 ya funcionan; los de T02–T12 son contratos futuros.
+Los comandos de T01 y T02 ya funcionan; los de T03–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -34,28 +34,47 @@ comandos que aparenten funcionar sin implementación.
 
 Poner en marcha una página React servida junto a un backend Express mínimo.
 
-- [ ] Aceptación: desarrollo muestra una página y un endpoint de salud responde 200.
-- [ ] Aceptación: build local arranca y sirve la página; configuración básica de entorno validada.
+- [x] Aceptación: desarrollo muestra una página y un endpoint de salud responde 200.
+- [x] Aceptación: build local arranca y sirve la página; configuración básica de entorno validada.
 - Verificación: `npm run dev`; `npm run build`; `npm start`; abrir la página y `/api/health`.
 - Dependencias: T01.
 - Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/client/main.tsx`, `src/client/App.tsx`, `index.html`.
 - Tamaño: M, 5 archivos. Si scripts necesitan ajustes, separarlos de esta tarea.
 
+Desglose de T02 acordado con su implementación:
+- T02a: dependencias, scripts y configuración TypeScript (4 archivos).
+- T02b: backend, configuración de entorno y pruebas HTTP/configuración (5 archivos).
+- T02c: página React, estilos, entrada HTML y tipos de recursos (5 archivos).
+- Documentación y evidencias se actualizan al verificar el conjunto.
+
+Ajuste técnico: Express incorpora Vite como middleware en desarrollo, compartiendo
+puerto con la API; no se necesita proxy en T03. Vitest se introduce ahora para
+probar el contrato de salud y la validación de entorno. En T03 se ampliará para
+las pruebas con PostgreSQL. La interfaz inicial será una página de presentación
+accesible, con colores neutros y acento verde, sin simular creación de enlaces.
+
+Verificación T02 (2026-10-01): 13 pruebas Vitest pasan. `npm run build` incluye
+comprobación de tipos; `npm run lint` pasa. Se comprobaron HTTP 200 para `/` y
+`/api/health`, y JSON 404 para `/api/missing`, tanto en desarrollo (3000) como
+en producción local (3001). Navegador real: React visible en ambos modos, consola
+sin errores ni advertencias, sin desbordamiento horizontal a 320/768/1024/1440 px
+y navegación mediante teclado. No hay persistencia ni acortamiento todavía.
+
 ### Checkpoint A — Base ejecutable
 
-- [ ] Tipos, lint y build pasan; arranque comprobado en desarrollo y build local.
+- [x] Tipos, lint y build pasan; arranque comprobado en desarrollo y build local.
 - [ ] Revisar con Matteo la estructura antes de incorporar persistencia.
 
 ## T03 — Preparar datos y entorno de pruebas
 
-Conectar PostgreSQL local y configurar las pruebas y el proxy de desarrollo.
+Conectar PostgreSQL local y ampliar la configuración de pruebas para persistencia.
 
 - [ ] Aceptación: Compose inicia PostgreSQL con comprobación de salud y volumen persistente.
 - [ ] Aceptación: configuración de ejemplo distingue base de desarrollo y de pruebas.
-- [ ] Aceptación: pool de conexiones y proxy `/api`/`/r` funcionan; runner de pruebas configurado.
-- Verificación: `docker compose up -d db`; `docker compose ps`; probar conexión y proxy; `npm run build`.
+- [ ] Aceptación: pool de conexiones funciona; el runner existente distingue pruebas unitarias y de integración.
+- Verificación: `docker compose up -d db`; `docker compose ps`; probar conexión y aislamiento; `npm run build`.
 - Dependencias: T02.
-- Archivos: `compose.yaml`, `.env.example`, `src/server/db.ts`, `vite.config.ts`, `vitest.config.ts`.
+- Archivos: `compose.yaml`, `.env.example`, `src/server/db.ts`, `package.json`, `vitest.config.ts`.
 - Tamaño: M, 5 archivos.
 
 ## T04 — Crear el esquema reproducible

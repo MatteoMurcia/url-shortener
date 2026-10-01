@@ -3,6 +3,7 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -16,6 +17,6 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["eslint.config.js", "src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"],
+  "include": ["eslint.config.js", "src/**/*.ts", "src/**/*.tsx", "scripts/**/*.ts", "tests/**/*.ts"],
   "exclude": ["node_modules", "dist", "coverage", "playwright-report", "test-results"]
 }
