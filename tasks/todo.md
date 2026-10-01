@@ -1,0 +1,194 @@
+# Tareas futuras — primera entrega local
+
+Estado: propuesta, todo pendiente. No ejecutar durante la fase de planificación.
+Arquitectura y definición de terminado: [plan.md](plan.md).
+Los comandos son contratos futuros; todavía no existen scripts instalados.
+Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
+supera cinco archivos de implementación o una sesión enfocada, dividirla antes
+de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
+
+## T01 — Preparar herramientas
+
+Definir el paquete npm y las comprobaciones estáticas del proyecto.
+
+- [ ] Aceptación: dependencias fijadas en lockfile; TypeScript estricto y lint configurados.
+- [ ] Aceptación: scripts previstos declarados y secretos/dependencias excluidos de Git.
+- Verificación: `npm ci`; `npm run typecheck`; `npm run lint` sobre la configuración inicial.
+- Dependencias: revisión del plan y petición explícita de iniciar implementación.
+- Archivos: `package.json`, `package-lock.json`, `tsconfig.json`, `eslint.config.js`, `.gitignore`.
+- Tamaño: M, 5 archivos.
+
+## T02 — Ejecutar la aplicación mínima
+
+Poner en marcha una página React servida junto a un backend Express mínimo.
+
+- [ ] Aceptación: desarrollo muestra una página y un endpoint de salud responde 200.
+- [ ] Aceptación: build local arranca y sirve la página; configuración básica de entorno validada.
+- Verificación: `npm run dev`; `npm run build`; `npm start`; abrir la página y `/api/health`.
+- Dependencias: T01.
+- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/client/main.tsx`, `src/client/App.tsx`, `index.html`.
+- Tamaño: M, 5 archivos. Si scripts necesitan ajustes, separarlos de esta tarea.
+
+### Checkpoint A — Base ejecutable
+
+- [ ] Tipos, lint y build pasan; arranque comprobado en desarrollo y build local.
+- [ ] Revisar con Matteo la estructura antes de incorporar persistencia.
+
+## T03 — Preparar datos y entorno de pruebas
+
+Conectar PostgreSQL local y configurar las pruebas y el proxy de desarrollo.
+
+- [ ] Aceptación: Compose inicia PostgreSQL con comprobación de salud y volumen persistente.
+- [ ] Aceptación: configuración de ejemplo distingue base de desarrollo y de pruebas.
+- [ ] Aceptación: pool de conexiones y proxy `/api`/`/r` funcionan; runner de pruebas configurado.
+- Verificación: `docker compose up -d db`; `docker compose ps`; probar conexión y proxy; `npm run build`.
+- Dependencias: T02.
+- Archivos: `compose.yaml`, `.env.example`, `src/server/db.ts`, `vite.config.ts`, `vitest.config.ts`.
+- Tamaño: M, 5 archivos.
+
+## T04 — Crear el esquema reproducible
+
+Versionar el esquema de enlaces y comprobar su instalación en una base vacía.
+
+- [ ] Aceptación: migración crea las columnas de `links` y la clave única especificadas.
+- [ ] Aceptación: historial evita reaplicar migraciones; fallo revierte la transacción.
+- [ ] Aceptación: preparación de pruebas rechaza limpiar la base de desarrollo.
+- Verificación: `npm run db:migrate` dos veces; `npm run test:integration -- tests/migrations.test.ts`.
+- Dependencias: T03.
+- Archivos: `db/migrations/001_links.sql`, `scripts/migrate.ts`, `tests/database.ts`, `tests/migrations.test.ts`.
+- Tamaño: M, 4 archivos.
+
+### Checkpoint B — Persistencia preparada
+
+- [ ] Base vacía reproducible, migración repetible y aislamiento de pruebas comprobados.
+- [ ] Revisar modelo y contrato HTTP con Matteo antes de conectar el flujo principal.
+
+## T05 — Crear un enlace desde la interfaz
+
+Implementar una entrega vertical: formulario, API, generación de código e inserción.
+
+- [ ] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
+- [ ] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
+- [ ] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
+- Verificación: `npm run test:integration -- tests/create-link.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
+- Dependencias: T04.
+- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/server/db.ts`, `src/client/App.tsx`, `tests/create-link.test.ts`.
+- Tamaño: M, 5 archivos.
+
+## T06 — Abrir el enlace corto
+
+Resolver un código y redirigir a la URL persistida sin descargarla en el backend.
+
+- [ ] Aceptación: enlace existente responde 302 con destino completo y `Cache-Control: no-store`.
+- [ ] Aceptación: código inválido o inexistente muestra 404; fallos de base de datos no se confunden con inexistentes.
+- [ ] Aceptación: reiniciar el backend conserva el funcionamiento de enlaces ya creados.
+- Verificación: `npm run test:integration -- tests/redirect.test.ts`; crear, abrir, reiniciar y volver a abrir un enlace.
+- Dependencias: T05.
+- Archivos: `src/server/app.ts`, `src/server/db.ts`, `tests/redirect.test.ts`.
+- Tamaño: M, 3 archivos.
+
+### Checkpoint C — Primer recorrido funcional
+
+- [ ] Crear y abrir un enlace funciona de extremo a extremo y tras reinicio.
+- [ ] Demostrar el recorrido a Matteo; revisar decisiones antes de ampliar casos.
+
+## T07 — Rechazar entradas inválidas con feedback útil
+
+Completar la validación del contrato y presentar errores comprensibles en la UI.
+
+- [ ] Aceptación: cubrir tipos incorrectos, JSON mal formado, vacío, longitud, credenciales y protocolos no permitidos.
+- [ ] Aceptación: cuerpos mayores del límite reciben 413; errores esperados usan el formato acordado.
+- [ ] Aceptación: el formulario conserva la entrada y anuncia el error sin fingir éxito.
+- Verificación: `npm test -- tests/validation.test.ts`; `npm run test:integration -- tests/create-link.test.ts`; revisión manual de errores.
+- Dependencias: T06.
+- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/client/App.tsx`, `tests/validation.test.ts`, `tests/create-link.test.ts`.
+- Tamaño: M, 5 archivos.
+
+## T08 — Comprobar colisiones y fallos de persistencia
+
+Probar los riesgos que el flujo normal difícilmente reproduce.
+
+- [ ] Aceptación: colisión forzada reintenta hasta el límite sin sobrescribir el enlace anterior.
+- [ ] Aceptación: agotamiento de intentos o base indisponible produce 503 sin filtrar detalles.
+- [ ] Aceptación: creaciones concurrentes conservan asociaciones correctas entre códigos y destinos.
+- Verificación: `npm run test:integration -- tests/link-resilience.test.ts`; pruebas con PostgreSQL real y generador controlado para provocar colisiones.
+- Dependencias: T07.
+- Archivos: `src/server/links.ts`, `src/server/db.ts`, `tests/link-resilience.test.ts`.
+- Tamaño: M, 3 archivos.
+
+### Checkpoint D — Contrato resistente a errores
+
+- [ ] Integración y regresiones pasan; revisar evidencia de concurrencia y errores.
+- [ ] Comprobar con Matteo que la complejidad añadida responde a casos verificables.
+
+## T09 — Completar copia y accesibilidad
+
+Hacer utilizable la experiencia en móvil y mediante teclado.
+
+- [ ] Aceptación: botón de copia confirma éxito solo si Clipboard funciona; alternativa manual visible si falla.
+- [ ] Aceptación: etiquetas, foco visible y anuncios accesibles para estados y errores.
+- [ ] Aceptación: URLs largas no rompen el diseño en móvil o escritorio.
+- Verificación: recorrido manual con teclado y anchuras de 360 y 1280 píxeles; probar copia disponible y denegada; `npm run build`.
+- Dependencias: T08.
+- Archivos: `src/client/App.tsx`, `src/client/styles.css`, `src/client/main.tsx`.
+- Tamaño: M, 3 archivos.
+
+## T10 — Automatizar el recorrido web
+
+Verificar la aplicación completa desde el navegador usando un destino controlado.
+
+- [ ] Aceptación: prueba crea el enlace y sigue la redirección hasta un servidor local de prueba.
+- [ ] Aceptación: pruebas cubren error de validación, 404 y copia exitosa/fallida.
+- [ ] Aceptación: pruebas utilizan datos aislados y no dependen de sitios externos.
+- Verificación: `npx playwright install chromium`; `npm run test:e2e`; inspeccionar resultados y trazas solo si hay fallos.
+- Dependencias: T09.
+- Archivos: `playwright.config.ts`, `e2e/links.spec.ts`, `e2e/destination-server.ts`, `e2e/setup.ts`.
+- Tamaño: M, 4 archivos.
+
+### Checkpoint E — Experiencia comprobada
+
+- [ ] Flujo web automatizado pasa; revisión móvil y teclado completada.
+- [ ] Revisar con Matteo el resultado y las limitaciones antes de preparar entrega local.
+
+## T11 — Completar operación local
+
+Añadir señales mínimas para diagnosticar fallos y terminar el proceso limpiamente.
+
+- [ ] Aceptación: petición produce log con identificador, estado y duración sin destinos completos ni secretos.
+- [ ] Aceptación: configuración inválida impide arrancar con error comprensible; proceso cierra servidor y pool.
+- [ ] Aceptación: rutas desconocidas de API no devuelven la página frontend como respuesta exitosa.
+- Verificación: `npm run test:integration -- tests/operations.test.ts`; `npm run build`; `npm start`; comprobar cierre y logs.
+- Dependencias: T10.
+- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/db.ts`, `tests/operations.test.ts`.
+- Tamaño: M, 4 archivos.
+
+## T12 — Preparar una entrega reproducible
+
+Documentar el proyecto y preparar CI para cuando se publique en GitHub.
+
+- [ ] Aceptación: README explica arranque desde cero, configuración, pruebas, API y limitaciones de la demo local.
+- [ ] Aceptación: decisiones documentan códigos aleatorios, 302, PostgreSQL y ausencia de caché con sus compromisos.
+- [ ] Aceptación: workflow configura PostgreSQL de pruebas y ejecuta tipos, lint, pruebas y build; primera ejecución remota queda pendiente hasta publicar.
+- Verificación: seguir README desde un entorno limpio; ejecutar `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:integration`, `npm run test:e2e`, `npm run build`; revisar workflow sin afirmar que corrió en GitHub.
+- Dependencias: T11.
+- Archivos: `README.md`, `docs/architecture.md`, `.github/workflows/ci.yml`, `.env.example`.
+- Tamaño: M, 4 archivos.
+
+### Checkpoint F — Primera entrega local terminada
+
+- [ ] Todos los criterios de SPEC.md están vinculados a evidencia y comprobaciones satisfactorias.
+- [ ] Matteo puede ejecutar y explicar el proyecto; limitaciones y pendientes quedan documentados.
+- [ ] Distinguir entrega local, publicación del repositorio y despliegue público; no afirmar que los dos últimos se han realizado.
+
+## Trazabilidad de la especificación
+
+| Criterio de SPEC.md | Tareas que lo implementarán y comprobarán |
+|---|---|
+| 1: creación persistente y origen configurado | T05, T10 |
+| 2: validación de URLs | T07, T10 |
+| 3: redirección y 404 | T06, T10 |
+| 4: generación y colisiones | T05, T08 |
+| 5: persistencia tras reinicio | T03, T04, T06 |
+| 6: accesibilidad y copia | T09, T10 |
+| 7: errores de persistencia y tamaño JSON | T07, T08, T11 |
+| 8: recorrido web controlado | T10 |
