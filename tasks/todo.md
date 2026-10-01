@@ -1,8 +1,8 @@
-# Tareas futuras — primera entrega local
+# Tareas — primera entrega local
 
-Estado: propuesta, todo pendiente. No ejecutar durante la fase de planificación.
+Estado: T01 autorizado y completado; T02–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos son contratos futuros; todavía no existen scripts instalados.
+Los comandos de T01 ya funcionan; los de T02–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -11,12 +11,24 @@ de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
 
 Definir el paquete npm y las comprobaciones estáticas del proyecto.
 
-- [ ] Aceptación: dependencias fijadas en lockfile; TypeScript estricto y lint configurados.
-- [ ] Aceptación: scripts previstos declarados y secretos/dependencias excluidos de Git.
+- [x] Aceptación: dependencias fijadas en lockfile; TypeScript estricto y lint configurados.
+- [x] Aceptación: scripts de esta entrega declarados y secretos/dependencias excluidos de Git.
 - Verificación: `npm ci`; `npm run typecheck`; `npm run lint` sobre la configuración inicial.
 - Dependencias: revisión del plan y petición explícita de iniciar implementación.
 - Archivos: `package.json`, `package-lock.json`, `tsconfig.json`, `eslint.config.js`, `.gitignore`.
 - Tamaño: M, 5 archivos.
+
+Resultado T01 (2026-10-01): `npm ci`, `npm run typecheck` y `npm run lint`
+completados con éxito. `git check-ignore` confirma exclusión de `.env`, variantes,
+`.npmrc`, claves, `node_modules` y `dist`, y permite `.env.example`. Se comprueba
+la configuración ESLint con TypeScript (`allowJs` + `checkJs`) mientras aún no
+hay fuentes de aplicación. Se fijó TypeScript 6.0.3 por compatibilidad con
+typescript-eslint 8.71.0. No hay build ni tests de aplicación en esta tarea.
+
+Ampliación autorizada: inicializar Git y conectar GitHub. Incluye README inicial
+y actualización del estado de estos documentos; no implementa T02. Los scripts
+de desarrollo, build y pruebas se introducirán con sus tareas para evitar
+comandos que aparenten funcionar sin implementación.
 
 ## T02 — Ejecutar la aplicación mínima
 

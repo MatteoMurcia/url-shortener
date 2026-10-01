@@ -1,7 +1,7 @@
 # Plan: URL Shortener
 
-Estado: borrador para discutir. Solo planificación; ninguna tarea de desarrollo
-ha comenzado. Fuente de requisitos: [SPEC.md](../SPEC.md).
+Estado: T01 autorizado e implementado, con conexión a GitHub solicitada por el
+usuario. T02–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
 Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
 
 ## Objetivo y alcance
@@ -167,5 +167,5 @@ distintas; el repositorio puede documentarse antes de desplegar el servicio.
 - ¿La IA formará parte del producto, del proceso de desarrollo o de ambos?
 - ¿Qué dedicación y presupuesto condicionarán las entregas posteriores?
 
-No iniciar desarrollo al cerrar estas preguntas: el usuario ha pedido seguir
-planeando. Se requiere una petición posterior para pasar a implementación.
+El usuario ha autorizado T01 y la conexión a GitHub. Esa autorización no inicia
+automáticamente T02 ni las entregas posteriores; avanzar según sus peticiones.

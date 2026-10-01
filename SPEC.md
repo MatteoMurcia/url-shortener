@@ -1,9 +1,9 @@
 # URL Shortener — primera entrega
 
-Estado: propuesta pendiente de revisión. TypeScript y Node.js elegidos por Matteo.
+Estado: T01 autorizado e implementado. TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: solo planificación, arquitectura y desglose de tareas.
-No iniciar implementación sin una petición posterior del usuario.
+Modo de trabajo actual: implementar únicamente T01 y conectar el repositorio a
+GitHub, según petición del usuario. Las tareas T02–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
@@ -85,8 +85,9 @@ compose.yaml     PostgreSQL local
 
 ## Comandos previstos
 
-Estos comandos son el contrato de la implementación futura; todavía no existen
-scripts ni dependencias instaladas en este repositorio.
+`npm ci`, `npm run typecheck` y `npm run lint` ya funcionan tras T01. El resto
+de los comandos de esta lista se añadirá en las tareas correspondientes; todavía
+no hay aplicación, base de datos, build ni suite de pruebas.
 
 ```sh
 npm ci
