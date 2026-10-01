@@ -1,9 +1,9 @@
 # URL Shortener — primera entrega
 
-Estado: T01 y T02 implementados. TypeScript y Node.js elegidos por Matteo.
+Estado: T01, T02 y T03 implementados. TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: T02 autorizado por el usuario; aplicación mínima con
-React y Express. Las tareas T03–T12 siguen pendientes.
+Modo de trabajo actual: T03 autorizado por el usuario; entorno PostgreSQL local
+y pruebas aisladas. Las tareas T04–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
@@ -85,13 +85,14 @@ compose.yaml     PostgreSQL local
 
 ## Comandos previstos
 
-T02 añade `npm run dev`, `npm run build`, `npm start` y `npm test` a los comandos
-de T01. La aplicación inicial y las pruebas de salud/configuración funcionan;
-los comandos de base de datos, integración con PostgreSQL y E2E quedan pendientes.
+T02 añade desarrollo, build, arranque y pruebas a T01. T03 añade Compose y
+`npm run test:integration`. Copiar `.env.example` a `.env` antes de iniciar Compose.
+Migraciones (`db:migrate`) y E2E siguen pendientes; no hay esquema de enlaces aún.
 
 ```sh
 npm ci
 docker compose up -d db
+docker compose --profile test up -d --wait
 npm run db:migrate
 npm run dev
 npm run typecheck

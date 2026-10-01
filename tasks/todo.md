@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01 y T02 completados; T03–T12 pendientes.
+Estado: T01 y T02 completados y fusionados; T03 completado en su rama; T04–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01 y T02 ya funcionan; los de T03–T12 son contratos futuros.
+Los comandos de T01–T03 ya funcionan; los de T04–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -63,19 +63,32 @@ y navegación mediante teclado. No hay persistencia ni acortamiento todavía.
 ### Checkpoint A — Base ejecutable
 
 - [x] Tipos, lint y build pasan; arranque comprobado en desarrollo y build local.
-- [ ] Revisar con Matteo la estructura antes de incorporar persistencia.
+- [x] Revisar con Matteo la estructura antes de incorporar persistencia. PR #1 fusionada por Matteo; autorizado continuar con T03.
 
 ## T03 — Preparar datos y entorno de pruebas
 
 Conectar PostgreSQL local y ampliar la configuración de pruebas para persistencia.
 
-- [ ] Aceptación: Compose inicia PostgreSQL con comprobación de salud y volumen persistente.
-- [ ] Aceptación: configuración de ejemplo distingue base de desarrollo y de pruebas.
-- [ ] Aceptación: pool de conexiones funciona; el runner existente distingue pruebas unitarias y de integración.
+Desglose: T03a configura Compose y entorno; T03b añade pool y pruebas de conexión
+con base aislada; T03c separa proyectos Vitest y actualiza scripts/configuración.
+Cada parte mantiene un alcance de hasta cinco archivos de implementación.
+Dos instancias PostgreSQL locales separan desarrollo (volumen persistente) de
+pruebas (almacenamiento temporal); no se implementa aún el esquema de enlaces.
+
+- [x] Aceptación: Compose inicia PostgreSQL con comprobación de salud y volumen persistente.
+- [x] Aceptación: configuración de ejemplo distingue base de desarrollo y de pruebas.
+- [x] Aceptación: pool de conexiones funciona; el runner existente distingue pruebas unitarias y de integración.
 - Verificación: `docker compose up -d db`; `docker compose ps`; probar conexión y aislamiento; `npm run build`.
 - Dependencias: T02.
 - Archivos: `compose.yaml`, `.env.example`, `src/server/db.ts`, `package.json`, `vitest.config.ts`.
 - Tamaño: M, 5 archivos.
+
+Evidencia T03 (2026-10-01): 26 pruebas sin PostgreSQL y 2 de integración pasan;
+lint y build (incluido typecheck) pasan. Ambos contenedores están saludables.
+La identidad del clúster de desarrollo se mantiene tras reemplazar el contenedor,
+demostrando reutilización del volumen. Las pruebas verifican bases distintas,
+consultas parametrizadas y rollback sin tablas persistentes. `.env` es local e
+ignorado; el pool se conectará a las rutas al implementar enlaces.
 
 ## T04 — Crear el esquema reproducible
 
@@ -84,9 +97,9 @@ Versionar el esquema de enlaces y comprobar su instalación en una base vacía.
 - [ ] Aceptación: migración crea las columnas de `links` y la clave única especificadas.
 - [ ] Aceptación: historial evita reaplicar migraciones; fallo revierte la transacción.
 - [ ] Aceptación: preparación de pruebas rechaza limpiar la base de desarrollo.
-- Verificación: `npm run db:migrate` dos veces; `npm run test:integration -- tests/migrations.test.ts`.
+- Verificación: `npm run db:migrate` dos veces; `npm run test:integration -- tests/migrations.integration.test.ts`.
 - Dependencias: T03.
-- Archivos: `db/migrations/001_links.sql`, `scripts/migrate.ts`, `tests/database.ts`, `tests/migrations.test.ts`.
+- Archivos: `db/migrations/001_links.sql`, `scripts/migrate.ts`, `tests/database.ts`, `tests/migrations.integration.test.ts`.
 - Tamaño: M, 4 archivos.
 
 ### Checkpoint B — Persistencia preparada
@@ -101,9 +114,9 @@ Implementar una entrega vertical: formulario, API, generación de código e inse
 - [ ] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
 - [ ] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
 - [ ] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
-- Verificación: `npm run test:integration -- tests/create-link.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
+- Verificación: `npm run test:integration -- tests/create-link.integration.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
 - Dependencias: T04.
-- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/server/db.ts`, `src/client/App.tsx`, `tests/create-link.test.ts`.
+- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/server/db.ts`, `src/client/App.tsx`, `tests/create-link.integration.test.ts`.
 - Tamaño: M, 5 archivos.
 
 ## T06 — Abrir el enlace corto
@@ -113,9 +126,9 @@ Resolver un código y redirigir a la URL persistida sin descargarla en el backen
 - [ ] Aceptación: enlace existente responde 302 con destino completo y `Cache-Control: no-store`.
 - [ ] Aceptación: código inválido o inexistente muestra 404; fallos de base de datos no se confunden con inexistentes.
 - [ ] Aceptación: reiniciar el backend conserva el funcionamiento de enlaces ya creados.
-- Verificación: `npm run test:integration -- tests/redirect.test.ts`; crear, abrir, reiniciar y volver a abrir un enlace.
+- Verificación: `npm run test:integration -- tests/redirect.integration.test.ts`; crear, abrir, reiniciar y volver a abrir un enlace.
 - Dependencias: T05.
-- Archivos: `src/server/app.ts`, `src/server/db.ts`, `tests/redirect.test.ts`.
+- Archivos: `src/server/app.ts`, `src/server/db.ts`, `tests/redirect.integration.test.ts`.
 - Tamaño: M, 3 archivos.
 
 ### Checkpoint C — Primer recorrido funcional
@@ -130,9 +143,9 @@ Completar la validación del contrato y presentar errores comprensibles en la UI
 - [ ] Aceptación: cubrir tipos incorrectos, JSON mal formado, vacío, longitud, credenciales y protocolos no permitidos.
 - [ ] Aceptación: cuerpos mayores del límite reciben 413; errores esperados usan el formato acordado.
 - [ ] Aceptación: el formulario conserva la entrada y anuncia el error sin fingir éxito.
-- Verificación: `npm test -- tests/validation.test.ts`; `npm run test:integration -- tests/create-link.test.ts`; revisión manual de errores.
+- Verificación: `npm test -- tests/validation.test.ts`; `npm run test:integration -- tests/create-link.integration.test.ts`; revisión manual de errores.
 - Dependencias: T06.
-- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/client/App.tsx`, `tests/validation.test.ts`, `tests/create-link.test.ts`.
+- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/client/App.tsx`, `tests/validation.test.ts`, `tests/create-link.integration.test.ts`.
 - Tamaño: M, 5 archivos.
 
 ## T08 — Comprobar colisiones y fallos de persistencia
@@ -142,9 +155,9 @@ Probar los riesgos que el flujo normal difícilmente reproduce.
 - [ ] Aceptación: colisión forzada reintenta hasta el límite sin sobrescribir el enlace anterior.
 - [ ] Aceptación: agotamiento de intentos o base indisponible produce 503 sin filtrar detalles.
 - [ ] Aceptación: creaciones concurrentes conservan asociaciones correctas entre códigos y destinos.
-- Verificación: `npm run test:integration -- tests/link-resilience.test.ts`; pruebas con PostgreSQL real y generador controlado para provocar colisiones.
+- Verificación: `npm run test:integration -- tests/link-resilience.integration.test.ts`; pruebas con PostgreSQL real y generador controlado para provocar colisiones.
 - Dependencias: T07.
-- Archivos: `src/server/links.ts`, `src/server/db.ts`, `tests/link-resilience.test.ts`.
+- Archivos: `src/server/links.ts`, `src/server/db.ts`, `tests/link-resilience.integration.test.ts`.
 - Tamaño: M, 3 archivos.
 
 ### Checkpoint D — Contrato resistente a errores
@@ -188,9 +201,9 @@ Añadir señales mínimas para diagnosticar fallos y terminar el proceso limpiam
 - [ ] Aceptación: petición produce log con identificador, estado y duración sin destinos completos ni secretos.
 - [ ] Aceptación: configuración inválida impide arrancar con error comprensible; proceso cierra servidor y pool.
 - [ ] Aceptación: rutas desconocidas de API no devuelven la página frontend como respuesta exitosa.
-- Verificación: `npm run test:integration -- tests/operations.test.ts`; `npm run build`; `npm start`; comprobar cierre y logs.
+- Verificación: `npm run test:integration -- tests/operations.integration.test.ts`; `npm run build`; `npm start`; comprobar cierre y logs.
 - Dependencias: T10.
-- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/db.ts`, `tests/operations.test.ts`.
+- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/db.ts`, `tests/operations.integration.test.ts`.
 - Tamaño: M, 4 archivos.
 
 ## T12 — Preparar una entrega reproducible
