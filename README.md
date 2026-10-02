@@ -6,14 +6,13 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T05: persistent link creation.** The React form submits destinations to Express,
+**T06: persistent link creation and redirection.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
 The form has been verified in a real browser, including a delayed database insert,
 repeat submission attempts, error feedback, keyboard submission and mobile layout.
-Opening short links comes in
-T06; generated URLs do not redirect yet. There is no public deployment. The AI feature is still
+Saved links now open their persisted destination through an uncached 302 response. There is no public deployment. The AI feature is still
 being defined; no AI capability is implemented or claimed at this stage.
 
 ## Prerequisites
@@ -108,6 +107,19 @@ or malformed JSON returns 400, bodies over 8 KiB return 413, and persistence
 failures return a generic 503 without database details. This local preview has
 no authentication or rate limiting and is not ready for public deployment.
 
+## Open a short link
+
+`GET /r/:code` returns 302 with the stored destination in `Location`, including
+its path, query and fragment. All handled redirect-route responses use
+`Cache-Control: no-store`. Invalid codes (not 12 URL-safe characters) and missing
+links return a plain-text 404; database query failures return a generic 503.
+The backend looks up the destination without downloading it.
+
+The form exposes **Open short link** after saving. HTTP checks verify redirection
+and persistence across a compiled-process restart. The integrated browser blocked
+the test navigation with `ERR_BLOCKED_BY_CLIENT`, so visual end-to-end navigation
+remains unverified in this environment.
+
 ## Health endpoint
 
 `GET /api/health` returns HTTP 200 and `{"status":"ok"}`, with caching disabled.
@@ -149,8 +161,8 @@ failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
 `npm test` runs 44 tests that need no PostgreSQL. `npm run test:integration`
-runs nine real-database tests, including schema constraints, migration history,
-concurrent runners, rollback and HTTP link creation. Both
+runs ten real-database tests, including schema constraints, migration history,
+concurrent runners, rollback HTTP link creation and redirection across server instances. Both
 commands load `.env` if present; existing process environment values take precedence.
 Missing database configuration or an unavailable database causes integration
 tests to fail, not skip.

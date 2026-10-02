@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 implementado y verificado por HTTP; T07–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T05 ya funcionan; los de T06–T12 son contratos futuros.
+Los comandos de T01–T06 ya funcionan; los de T07–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -149,19 +149,33 @@ También se comprobó error FTP sin falso éxito, entrada conservada, envío con
 Tab/Enter y presentación a 375 px sin desbordamiento horizontal. No hubo errores
 nuevos de consola al recargar; permanecían dos errores antiguos de Vite de la
 página anterior. No se modificó código ni se dejaron bloqueos activos.
-La PR queda lista para revisión. T06 no se ha iniciado; todavía no hay redirección.
+La evidencia de T05 se entregó en PR #5. La redirección se incorpora en T06.
 
 ## T06 — Abrir el enlace corto
 
 Resolver un código y redirigir a la URL persistida sin descargarla en el backend.
 
-- [ ] Aceptación: enlace existente responde 302 con destino completo y `Cache-Control: no-store`.
-- [ ] Aceptación: código inválido o inexistente muestra 404; fallos de base de datos no se confunden con inexistentes.
-- [ ] Aceptación: reiniciar el backend conserva el funcionamiento de enlaces ya creados.
+- [x] Aceptación: enlace existente responde 302 con destino completo y `Cache-Control: no-store`.
+- [x] Aceptación: código inválido o inexistente muestra 404; fallos de base de datos no se confunden con inexistentes.
+- [x] Aceptación: reiniciar el backend conserva el funcionamiento de enlaces ya creados.
 - Verificación: `npm run test:integration -- tests/redirect.integration.test.ts`; crear, abrir, reiniciar y volver a abrir un enlace.
 - Dependencias: T05.
 - Archivos: `src/server/app.ts`, `src/server/db.ts`, `tests/redirect.integration.test.ts`.
 - Tamaño: M, 3 archivos.
+
+Evidencia T06 (2026-10-02): prueba de integración primero falló con 404 en lugar
+de 302 y después pasó. Se verifican Location completo, no-store, 404 por código
+inválido/ausente y 503 genérico ante fallo de consulta. Dos instancias sucesivas
+del servidor reutilizan los datos. Smoke del proceso compilado: crear, seguir
+redirección a un destino local, terminar el proceso, arrancar otro y abrir el
+mismo código con éxito. 44 pruebas unitarias y 10 de integración pasan; build y
+lint pasan. Un worker de integración avisó de cierre lento; su archivo aislado
+se repitió sin advertencia. Sin nuevas dependencias.
+
+Navegador: formulario crea y muestra Open short link. La apertura del enlace
+fue bloqueada por el cliente del navegador (ERR_BLOCKED_BY_CLIENT), aunque la
+misma URL devuelve 302 correcto por HTTP. La navegación visual completa del
+checkpoint C queda pendiente; no se declara probada. PR dependiente de #5.
 
 ### Checkpoint C — Primer recorrido funcional
 
