@@ -1,6 +1,6 @@
 # URL Shortener — primera entrega
 
-Estado: T01–T04 fusionados; T05 implementado con comprobación de navegador pendiente.
+Estado: T01–T04 fusionados; T05 completado y verificado en su rama.
 TypeScript y Node.js elegidos por Matteo.
 
 Modo de trabajo actual: T05 autorizado por el usuario; creación persistente

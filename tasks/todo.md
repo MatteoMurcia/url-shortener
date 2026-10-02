@@ -1,7 +1,6 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 implementado, pendiente de verificar
-el formulario en navegador; T06–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
 Los comandos de T01–T05 ya funcionan; los de T06–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
@@ -122,7 +121,7 @@ el esquema generado por cada prueba dentro de `url_shortener_test`.
 Implementar una entrega vertical: formulario, API, generación de código e inserción.
 
 - [x] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
-- [ ] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
+- [x] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
 - [x] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
 - Verificación: `npm run test:integration -- tests/create-link.integration.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
 - Dependencias: T04.
@@ -141,12 +140,16 @@ origen independiente de Host y 503 sin detalles de SQL. Smoke del build local:
 página 200, creación 201, fila persistida, origen configurado, JSON mal formado
 400 y cuerpo grande 413. Se eliminó solo la fila creada por ese smoke.
 
-Pendiente: crear desde el formulario, contrastar su fila y revisar estados de
-espera/error y presentación móvil/teclado. Matteo confirma que ve la página
-activa, pero la herramienta de navegador sigue bloqueada por política de URL
-en una página interna `data:` de error de conexión anterior. No se declara esa
-verificación realizada; la PR queda en borrador hasta completarla. T06 no se
-ha iniciado y los enlaces generados todavía no redirigen.
+Verificación de navegador completada (2026-10-02): con un bloqueo temporal de
+inserción en PostgreSQL, el formulario mostró Saving, deshabilitó campo/botón y
+no mostró resultado. Tras otro clic y Enter, se comprobó exactamente una
+inserción esperando y cero filas guardadas. Al liberar el bloqueo apareció el
+enlace; su código m0HZ0VzI2-xd coincidió con la única fila del destino de prueba.
+También se comprobó error FTP sin falso éxito, entrada conservada, envío con
+Tab/Enter y presentación a 375 px sin desbordamiento horizontal. No hubo errores
+nuevos de consola al recargar; permanecían dos errores antiguos de Vite de la
+página anterior. No se modificó código ni se dejaron bloqueos activos.
+La PR queda lista para revisión. T06 no se ha iniciado; todavía no hay redirección.
 
 ## T06 — Abrir el enlace corto
 
