@@ -1,3 +1,5 @@
+import { CreateLinkForm } from './CreateLinkForm.js';
+
 export function App() {
   return (
     <div className="page">
@@ -22,23 +24,11 @@ export function App() {
           </p>
           <p className="development-note">
             <span className="status-dot" aria-hidden="true" />
-            In development — link creation is coming next.
+            Local preview — create and save your links.
           </p>
         </div>
 
-        <figure className="example" aria-labelledby="example-caption">
-          <div className="example-label">THE IDEA IS SIMPLE</div>
-          <div className="long-link">
-            <span className="link-label">Start with a destination</span>
-            <span className="url">example.com/a/long/link?with=possibilities</span>
-          </div>
-          <div className="connector" aria-hidden="true">↓</div>
-          <div className="short-link">
-            <span className="link-label">Make room for what matters</span>
-            <span className="url">short.example/hello <span aria-hidden="true">↗</span></span>
-          </div>
-          <figcaption id="example-caption">An illustration of what’s coming. These links are examples.</figcaption>
-        </figure>
+        <CreateLinkForm />
       </main>
 
       <footer className="footer">
