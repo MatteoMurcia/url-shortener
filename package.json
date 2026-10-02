@@ -8,6 +8,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
+    "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
     "dev": "tsx watch --env-file-if-exists=.env src/server/main.ts --dev",
     "build": "npm run typecheck && vite build --outDir dist/client && tsc -p tsconfig.server.json",
     "start": "node --env-file-if-exists=.env dist/server/main.js",
