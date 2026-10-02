@@ -7,5 +7,14 @@ export function readConfig(env: NodeJS.ProcessEnv) {
 
   const host = env.HOST ?? '127.0.0.1';
   if (!host.trim()) throw new Error('HOST must not be empty.');
-  return { host, port };
+  let baseUrl: string;
+  try {
+    const url = new URL(env.BASE_URL ?? `http://127.0.0.1:${port}`);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password ||
+        url.pathname !== '/' || url.search || url.hash) throw new Error();
+    baseUrl = url.origin;
+  } catch {
+    throw new Error('BASE_URL must be an HTTP(S) origin without credentials, path, query or fragment.');
+  }
+  return { host, port, baseUrl };
 }
