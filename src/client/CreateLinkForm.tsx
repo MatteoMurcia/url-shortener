@@ -55,7 +55,7 @@ export function CreateLinkForm() {
           <div className="link-result">
             <label className="field-label" htmlFor="short-url">Your short link</label>
             <input id="short-url" readOnly value={shortUrl} />
-            <p className="field-hint">Saved for this local preview. Opening short links is coming next.</p>
+            <p className="field-hint"><a href={shortUrl}>Open short link ↗</a></p>
           </div>
         )}
       </form>
