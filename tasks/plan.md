@@ -1,7 +1,7 @@
 # Plan: URL Shortener
 
-Estado: T01 y T02 implementados, con repositorio conectado a GitHub.
-T03–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
+Estado: T01 y T02 fusionados; T03 implementado en su rama de trabajo.
+T04–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
 Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
 
 ## Objetivo y alcance
@@ -89,9 +89,12 @@ El contrato funcional está en SPEC.md. Refinamientos propuestos:
 
 ### Operación y límites
 
-Docker Compose proporciona PostgreSQL local con volumen persistente. Las pruebas
-de integración usan una base distinta, identificada explícitamente mediante
-`TEST_DATABASE_URL`; se rechaza ejecutar limpieza contra la base de desarrollo.
+Docker Compose proporciona PostgreSQL 17 local con volumen persistente (puerto
+15432). Las pruebas usan otra instancia temporal en el puerto 15433, bajo perfil
+`test`, con base y credenciales distintas. `TEST_DATABASE_URL` es obligatorio y
+el helper solo admite la base `url_shortener_test`, sin parámetros de URL y con
+nombre distinto a desarrollo. T03 no realiza limpieza; T04 extenderá este helper
+para migraciones. Los consumidores son responsables de cerrar sus pools.
 Las migraciones se aplican antes de arrancar, no como efecto de cada petición.
 
 Logs del backend con identificador de petición, ruta sin query, estado y duración;
@@ -169,5 +172,5 @@ distintas; el repositorio puede documentarse antes de desplegar el servicio.
 - ¿La IA formará parte del producto, del proceso de desarrollo o de ambos?
 - ¿Qué dedicación y presupuesto condicionarán las entregas posteriores?
 
-El usuario ha autorizado T01, la conexión a GitHub y T02. Esa autorización no
-inicia automáticamente T03 ni las entregas posteriores; avanzar según sus peticiones.
+El usuario fusionó T02 y autorizó T03. Esa autorización no inicia automáticamente
+T04 ni las entregas posteriores; avanzar según sus peticiones.
