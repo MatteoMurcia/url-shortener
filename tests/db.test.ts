@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
 import { createPool } from '../src/server/db.js';
-import { createTestPool } from './database.js';
+import { createTestPool, withTestSchema } from './database.js';
 
 test.each([undefined, '', 'not-a-url', 'https://localhost/db', 'postgresql://localhost/'])(
   'rejects an invalid database URL without leaking it', (url) => {
@@ -9,6 +9,14 @@ test.each([undefined, '', 'not-a-url', 'https://localhost/db', 'postgresql://loc
 );
 
 const development = 'postgresql://dev:password@localhost:15432/url_shortener';
+
+test('schema setup refuses the development database before its callback runs', async () => {
+  let called = false;
+  await expect(withTestSchema(async () => { called = true; }, {
+    DATABASE_URL: development, TEST_DATABASE_URL: development,
+  })).rejects.toThrow();
+  expect(called).toBe(false);
+});
 
 test.each([
   undefined,
