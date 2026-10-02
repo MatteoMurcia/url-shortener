@@ -10,7 +10,9 @@ to their destinations, with an accessible web interface and verifiable behavior.
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
-Browser verification of the new form is pending. Opening short links comes in
+The form has been verified in a real browser, including a delayed database insert,
+repeat submission attempts, error feedback, keyboard submission and mobile layout.
+Opening short links comes in
 T06; generated URLs do not redirect yet. There is no public deployment. The AI feature is still
 being defined; no AI capability is implemented or claimed at this stage.
 
