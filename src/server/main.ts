@@ -4,10 +4,13 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { createApp } from './app.js';
 import { readConfig } from './config.js';
+import { createPool } from './db.js';
 
-const { host, port } = readConfig(process.env);
-const app = createApp();
+const { host, port, baseUrl } = readConfig(process.env);
+const database = createPool(process.env.DATABASE_URL);
+const app = createApp({ database, baseUrl });
 const server = createServer(app);
+server.once('close', () => { void database.end(); });
 const development = process.argv.includes('--dev');
 app.set('env', development ? 'development' : 'production');
 

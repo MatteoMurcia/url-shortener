@@ -26,15 +26,20 @@ h1 { font-size: clamp(3.5rem, 6vw, 5.5rem); line-height: 1; letter-spacing: -.07
 .status-dot { flex-shrink: 0; width: .5rem; height: .5rem; margin-top: .4rem; background: #5e7053; border-radius: 50%; }
 .example { margin: 0; padding: 2rem; background: #e7ebdf; border: 1px solid #d5ddcb; border-radius: 1rem; min-width: 0; }
 .example-label { color: #526257; margin-bottom: 2rem; }
-.long-link, .short-link { padding: 1.5rem; border-radius: .5rem; }
-.long-link { background: #f8f9f3; border: 1px solid #d5ddcb; }
-.short-link { background: #1f493d; color: #fff; }
-.link-label { display: block; font-size: .75rem; margin-bottom: .75rem; }
-.url { display: block; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .875rem; line-height: 1.6; }
-.short-link .url { font-size: 1.25rem; }
-.short-link .url span { float: right; }
-.connector { text-align: center; padding: .75rem; font-size: 1.5rem; color: #526257; }
-figcaption { font-size: .75rem; color: #526257; margin-top: 1.5rem; line-height: 1.6; }
+.example h2 { font-size: 1.75rem; letter-spacing: -.04em; margin: 0 0 1.5rem; }
+.field-label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: .5rem; }
+input { width: 100%; min-width: 0; padding: .875rem; border: 1px solid #7c8d80; border-radius: .375rem; background: #fff; color: #23352d; font: inherit; font-size: 1rem; }
+input::placeholder { color: #66736a; }
+input:focus-visible, button:focus-visible { outline: 3px solid #1f493d; outline-offset: 3px; }
+button { width: 100%; border: 0; border-radius: .375rem; padding: 1rem; background: #1f493d; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+button span { margin-left: .5rem; }
+button:hover:enabled { background: #16372d; }
+button:disabled { opacity: .65; cursor: wait; }
+.field-hint { font-size: .75rem; color: #526257; line-height: 1.6; margin: .75rem 0 1rem; }
+.form-error { color: #892719; font-size: .875rem; line-height: 1.5; }
+.form-error:empty, [role="status"]:empty { margin: 0; }
+.link-result { border-top: 1px solid #bbc6b2; padding-top: 1.25rem; margin-top: 1.25rem; }
+.link-result input { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .875rem; }
 .footer { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid #d6dbcf; padding: 1.5rem 0; font-size: .75rem; color: #526257; line-height: 1.5; }
 .skip-link { position: absolute; top: .5rem; left: 1rem; transform: translateY(-200%); background: #fff; padding: .75rem; z-index: 1; }
 .skip-link:focus { transform: translateY(0); }
@@ -52,5 +57,4 @@ figcaption { font-size: .75rem; color: #526257; margin-top: 1.5rem; line-height:
   .brand { font-size: .875rem; gap: .5rem; }
   .source-link { font-size: .75rem; }
   .example { padding: 1.25rem; }
-  .long-link, .short-link { padding: 1rem; }
 }

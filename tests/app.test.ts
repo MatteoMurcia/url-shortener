@@ -2,17 +2,22 @@ import { createServer, type Server } from 'node:http';
 import { once } from 'node:events';
 import { afterEach, expect, test } from 'vitest';
 import { createApp } from '../src/server/app.js';
+import { createPool } from '../src/server/db.js';
+import type { Pool } from 'pg';
 
 let server: Server | undefined;
+let database: Pool | undefined;
 
 afterEach(async () => {
   if (server) await new Promise<void>((resolve, reject) => {
     server!.close((error) => error ? reject(error) : resolve());
   });
+  await database?.end();
 });
 
 async function startApp() {
-  server = createServer(createApp());
+  database = createPool('postgresql://localhost/unused_unit_database');
+  server = createServer(createApp({ database, baseUrl: 'https://short.example' }));
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const address = server.address();
