@@ -1,9 +1,9 @@
 # URL Shortener — primera entrega
 
-Estado: T01, T02 y T03 implementados. TypeScript y Node.js elegidos por Matteo.
+Estado: T01–T04 implementados. TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: T03 autorizado por el usuario; entorno PostgreSQL local
-y pruebas aisladas. Las tareas T04–T12 siguen pendientes.
+Modo de trabajo actual: T04 autorizado por el usuario; esquema de enlaces y
+migraciones verificadas. Las tareas T05–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
@@ -87,7 +87,7 @@ compose.yaml     PostgreSQL local
 
 T02 añade desarrollo, build, arranque y pruebas a T01. T03 añade Compose y
 `npm run test:integration`. Copiar `.env.example` a `.env` antes de iniciar Compose.
-Migraciones (`db:migrate`) y E2E siguen pendientes; no hay esquema de enlaces aún.
+T04 añade `npm run db:migrate` y el esquema de enlaces. E2E sigue pendiente.
 
 ```sh
 npm ci

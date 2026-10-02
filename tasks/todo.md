@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01 y T02 completados y fusionados; T03 completado en su rama; T04–T12 pendientes.
+Estado: T01–T03 completados y fusionados; T04 completado en su rama; T05–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T03 ya funcionan; los de T04–T12 son contratos futuros.
+Los comandos de T01–T04 ya funcionan; los de T05–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -94,17 +94,26 @@ ignorado; el pool se conectará a las rutas al implementar enlaces.
 
 Versionar el esquema de enlaces y comprobar su instalación en una base vacía.
 
-- [ ] Aceptación: migración crea las columnas de `links` y la clave única especificadas.
-- [ ] Aceptación: historial evita reaplicar migraciones; fallo revierte la transacción.
-- [ ] Aceptación: preparación de pruebas rechaza limpiar la base de desarrollo.
+- [x] Aceptación: migración crea las columnas de `links` y la clave única especificadas.
+- [x] Aceptación: historial evita reaplicar migraciones; fallo revierte la transacción.
+- [x] Aceptación: preparación de pruebas rechaza limpiar la base de desarrollo.
 - Verificación: `npm run db:migrate` dos veces; `npm run test:integration -- tests/migrations.integration.test.ts`.
 - Dependencias: T03.
 - Archivos: `db/migrations/001_links.sql`, `scripts/migrate.ts`, `tests/database.ts`, `tests/migrations.integration.test.ts`.
 - Tamaño: M, 4 archivos.
 
+T04 se entregó en pasos separados: esquema y helper aislado; ejecutor y CLI;
+pruebas de rollback; documentación. PR #2 confirmada como fusionada antes de
+crear la rama. Evidencia (2026-10-02): 27 pruebas sin PostgreSQL y 7 de integración
+pasan; lint y build (con typecheck) pasan. `npm run db:migrate` aplicó
+`001_links.sql` en `url_shortener` local y una segunda ejecución no hizo cambios.
+Pruebas reales verifican restricciones, concurrencia, rollback desde una base
+vacía y preservación de datos/historial ya existentes. La limpieza solo elimina
+el esquema generado por cada prueba dentro de `url_shortener_test`.
+
 ### Checkpoint B — Persistencia preparada
 
-- [ ] Base vacía reproducible, migración repetible y aislamiento de pruebas comprobados.
+- [x] Base vacía reproducible, migración repetible y aislamiento de pruebas comprobados.
 - [ ] Revisar modelo y contrato HTTP con Matteo antes de conectar el flujo principal.
 
 ## T05 — Crear un enlace desde la interfaz
