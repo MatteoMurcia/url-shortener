@@ -6,14 +6,12 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T04: versioned links schema and transactional migrations.** A responsive React
-landing page and Express backend run together. PostgreSQL development and test
-instances are available through Compose, with a reusable connection pool and
-separate test commands.
+**T05: persistent link creation.** The React form submits destinations to Express,
+which validates them and stores a random short code in PostgreSQL before returning
+the result. Development and test databases run through Compose.
 
-The initial links schema and migration command are available. Link creation
-comes in later tasks. The HTTP app does
-not use the pool yet, and there is no public deployment. The AI feature is still
+Browser verification of the new form is pending. Opening short links comes in
+T06; generated URLs do not redirect yet. There is no public deployment. The AI feature is still
 being defined; no AI capability is implemented or claimed at this stage.
 
 ## Prerequisites
@@ -43,7 +41,11 @@ support TypeScript 7. Dependencies are recorded in `package-lock.json`.
 
 ## Run locally
 
+First copy `.env.example` to `.env` (preserving any existing settings), then:
+
 ```sh
+docker compose up -d --wait db
+npm run db:migrate
 npm run dev
 ```
 
@@ -62,16 +64,47 @@ The build checks types, bundles React into `dist/client`, and compiles the serve
 into `dist/server`. Production serves only those client assets and the API;
 it does not start Vite. Build dependencies must be installed to run the build.
 
-Both modes load an optional root `.env` file through Node.js. If it is absent,
-the startup notice is informational and defaults apply:
+Both modes load a root `.env` file through Node.js. `DATABASE_URL` is required
+(from that file or the process environment); the other settings have defaults:
 
 | Variable | Default | Validation |
 | --- | --- | --- |
 | `PORT` | `3000` | Integer from 1 to 65535 |
 | `HOST` | `127.0.0.1` | Nonempty bind address; Node resolves it when listening |
+| `BASE_URL` | `http://127.0.0.1:<PORT>` | HTTP(S) origin without credentials, path, query or fragment |
+| `DATABASE_URL` | Required | PostgreSQL connection URL with host and database |
 
 The default bind address exposes the app only on your machine. To choose another
-port, place `PORT=3001` in a local `.env` file; keep that file out of Git.
+port, place `PORT=3001` in a local `.env` file and update `BASE_URL` if explicitly
+set; keep that file out of Git. Generated links use `BASE_URL`, never the request Host header.
+
+## Create a link
+
+Enter a destination in the form and select **Create short link**. The form disables
+submission while saving, retains the destination on failure, and displays the
+short URL only after the API confirms persistence. Copy controls are planned for T09.
+
+`POST /api/links` accepts JSON `{"url":"https://example.com/path?q=1#part"}`.
+On success it returns HTTP 201:
+
+```json
+{
+  "code": "AbC123xyZ_9-",
+  "shortUrl": "http://127.0.0.1:3000/r/AbC123xyZ_9-",
+  "destinationUrl": "https://example.com/path?q=1#part"
+}
+```
+
+Codes contain 12 URL-safe characters from nine cryptographically random bytes.
+The database enforces uniqueness; insertion retries at most three times without
+overwriting an existing link. Repeated destinations create separate links.
+Only HTTP(S) destinations without credentials are accepted, up to 2,048 input
+characters after trimming. URLs are normalized with Node's URL parser.
+
+Errors use `{"error":{"code":"INVALID_URL","message":"..."}}`: invalid input
+or malformed JSON returns 400, bodies over 8 KiB return 413, and persistence
+failures return a generic 503 without database details. This local preview has
+no authentication or rate limiting and is not ready for public deployment.
 
 ## Health endpoint
 
@@ -113,9 +146,9 @@ times out connection acquisition after five seconds, and logs idle connection
 failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
-`npm test` runs the 27 tests that need no PostgreSQL. `npm run test:integration`
-runs seven real-database tests, including schema constraints, migration history,
-concurrent runners and rollback. Both
+`npm test` runs 44 tests that need no PostgreSQL. `npm run test:integration`
+runs nine real-database tests, including schema constraints, migration history,
+concurrent runners, rollback and HTTP link creation. Both
 commands load `.env` if present; existing process environment values take precedence.
 Missing database configuration or an unavailable database causes integration
 tests to fail, not skip.
@@ -164,7 +197,8 @@ and [PostgreSQL advisory locking](https://www.postgresql.org/docs/17/explicit-lo
 ```text
 src/server/app.ts       HTTP routes, independently testable
 src/server/config.ts    Environment validation
-src/server/db.ts        PostgreSQL pool factory (not yet used by HTTP routes)
+src/server/db.ts        PostgreSQL pool factory
+src/server/links.ts     Destination validation and persistent link creation
 src/server/migrations.ts Transactional migration runner
 scripts/migrate.ts     Migration CLI
 db/migrations/        Versioned SQL files

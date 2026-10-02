@@ -1,8 +1,9 @@
 # Tareas — primera entrega local
 
-Estado: T01–T03 completados y fusionados; T04 completado en su rama; T05–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 implementado, pendiente de verificar
+el formulario en navegador; T06–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T04 ya funcionan; los de T05–T12 son contratos futuros.
+Los comandos de T01–T05 ya funcionan; los de T06–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -114,19 +115,38 @@ el esquema generado por cada prueba dentro de `url_shortener_test`.
 ### Checkpoint B — Persistencia preparada
 
 - [x] Base vacía reproducible, migración repetible y aislamiento de pruebas comprobados.
-- [ ] Revisar modelo y contrato HTTP con Matteo antes de conectar el flujo principal.
+- [x] Revisar modelo y contrato HTTP con Matteo antes de conectar el flujo principal: PR #3 fusionada; Matteo autorizó T05.
 
 ## T05 — Crear un enlace desde la interfaz
 
 Implementar una entrega vertical: formulario, API, generación de código e inserción.
 
-- [ ] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
+- [x] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
 - [ ] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
-- [ ] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
+- [x] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
 - Verificación: `npm run test:integration -- tests/create-link.integration.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
 - Dependencias: T04.
 - Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/server/db.ts`, `src/client/App.tsx`, `tests/create-link.integration.test.ts`.
 - Tamaño: M, 5 archivos.
+
+Desglose T05: servicio de creación y pruebas; configuración `BASE_URL`;
+conexión de la API al pool y prueba HTTP; formulario React; documentación.
+Cada paso se registra en un commit separado. Se incorporó la validación básica
+necesaria para guardar datos seguros; T07 ampliará los casos y T08 comprobará
+colisiones forzadas y concurrencia. No se añadieron dependencias.
+
+Evidencia (2026-10-02): 44 pruebas unitarias y 9 de integración pasan, junto a
+lint y build (incluye typecheck). La prueba HTTP verifica 201 después de guardar,
+origen independiente de Host y 503 sin detalles de SQL. Smoke del build local:
+página 200, creación 201, fila persistida, origen configurado, JSON mal formado
+400 y cuerpo grande 413. Se eliminó solo la fila creada por ese smoke.
+
+Pendiente: crear desde el formulario, contrastar su fila y revisar estados de
+espera/error y presentación móvil/teclado. Matteo confirma que ve la página
+activa, pero la herramienta de navegador sigue bloqueada por política de URL
+en una página interna `data:` de error de conexión anterior. No se declara esa
+verificación realizada; la PR queda en borrador hasta completarla. T06 no se
+ha iniciado y los enlaces generados todavía no redirigen.
 
 ## T06 — Abrir el enlace corto
 

@@ -1,9 +1,10 @@
 # URL Shortener — primera entrega
 
-Estado: T01–T04 implementados. TypeScript y Node.js elegidos por Matteo.
+Estado: T01–T04 fusionados; T05 implementado con comprobación de navegador pendiente.
+TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: T04 autorizado por el usuario; esquema de enlaces y
-migraciones verificadas. Las tareas T05–T12 siguen pendientes.
+Modo de trabajo actual: T05 autorizado por el usuario; creación persistente
+verificada en la API. Las tareas T06–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
