@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 completado en su rama; T08–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 completado en su rama; T09–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T07 ya funcionan; los de T08–T12 son contratos futuros.
+Los comandos de T01–T08 ya funcionan; los de T09–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -227,13 +227,28 @@ accesibles; no se afirma una prueba con lector de pantalla. 54 pruebas unitarias
 
 Probar los riesgos que el flujo normal difícilmente reproduce.
 
-- [ ] Aceptación: colisión forzada reintenta hasta el límite sin sobrescribir el enlace anterior.
-- [ ] Aceptación: agotamiento de intentos o base indisponible produce 503 sin filtrar detalles.
-- [ ] Aceptación: creaciones concurrentes conservan asociaciones correctas entre códigos y destinos.
+- [x] Aceptación: colisión forzada reintenta hasta el límite sin sobrescribir el enlace anterior.
+- [x] Aceptación: agotamiento de intentos o base indisponible produce 503 sin filtrar detalles.
+- [x] Aceptación: creaciones concurrentes conservan asociaciones correctas entre códigos y destinos.
 - Verificación: `npm run test:integration -- tests/link-resilience.integration.test.ts`; pruebas con PostgreSQL real y generador controlado para provocar colisiones.
 - Dependencias: T07.
 - Archivos: `src/server/links.ts`, `src/server/db.ts`, `tests/link-resilience.integration.test.ts`.
 - Tamaño: M, 3 archivos.
+
+Evidencia T08 (2026-10-03): cuatro pruebas con PostgreSQL real en esquemas
+aislados. Generador controlado únicamente en el archivo de pruebas, sin cambios
+de producción. Dos colisiones seguidas permiten éxito en el tercer intento;
+tres colisiones producen exactamente tres intentos y HTTP 503 genérico, sin
+sobrescribir la fila original. Una conexión real cerrada produce el mismo 503
+sin detalles internos y sin reintentos de consulta.
+
+Concurrencia: cuatro conexiones independientes comparten esquema y código
+inicial; una gana y las otras tres reintentan con códigos distintos controlados.
+Se comprueban cuatro asociaciones código/destino exactas y siete intentos totales.
+Se espera a todas las operaciones antes de limpiar incluso si alguna falla.
+54 pruebas unitarias, 15 de integración, build/typecheck y lint pasan. Sin
+cambios de UI, nuevas dependencias ni cambios en la base de desarrollo. El
+checkpoint D queda pendiente de su revisión específica.
 
 ### Checkpoint D — Contrato resistente a errores
 

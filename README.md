@@ -6,7 +6,7 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T07: validated link creation and persistent redirection.** The React form submits destinations to Express,
+**T08: validated links with verified collision and failure handling.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -168,9 +168,10 @@ failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
 `npm test` runs 54 tests that need no PostgreSQL. `npm run test:integration`
-runs eleven real-database tests, including schema constraints, migration history,
+runs fifteen real-database tests, including schema constraints, migration history,
 concurrent runners, rollback HTTP link creation, rejected request bodies with no inserted rows, and redirection
-across server instances. Both
+across server instances, forced collisions, closed connections and concurrent
+creation through independent database connections. Both
 commands load `.env` if present; existing process environment values take precedence.
 Missing database configuration or an unavailable database causes integration
 tests to fail, not skip.
