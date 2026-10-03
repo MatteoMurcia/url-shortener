@@ -1,6 +1,6 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 implementado y verificado por HTTP; T07–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
 Los comandos de T01–T06 ya funcionan; los de T07–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
@@ -172,15 +172,29 @@ mismo código con éxito. 44 pruebas unitarias y 10 de integración pasan; build
 lint pasan. Un worker de integración avisó de cierre lento; su archivo aislado
 se repitió sin advertencia. Sin nuevas dependencias.
 
-Navegador: formulario crea y muestra Open short link. La apertura del enlace
-fue bloqueada por el cliente del navegador (ERR_BLOCKED_BY_CLIENT), aunque la
-misma URL devuelve 302 correcto por HTTP. La navegación visual completa del
-checkpoint C queda pendiente; no se declara probada. PR dependiente de #5.
+La limitación de navegación inicial se resolvió en el checkpoint C usando un
+destino HTML local controlado. PR #6 fusionada en la rama de documentación;
+la PR del checkpoint lleva T06 y esta evidencia a main.
 
 ### Checkpoint C — Primer recorrido funcional
 
-- [ ] Crear y abrir un enlace funciona de extremo a extremo y tras reinicio.
-- [ ] Demostrar el recorrido a Matteo; revisar decisiones antes de ampliar casos.
+- [x] Crear y abrir un enlace funciona de extremo a extremo y tras reinicio.
+- [x] Demostrar el recorrido a Matteo; revisar decisiones antes de ampliar casos.
+
+Evidencia del checkpoint (2026-10-03): se creó desde el formulario el código
+`xGcmNW162GUA`, con destino HTML local
+`http://127.0.0.1:3002/checkpoint-c?source=short-link#verified`. Al pulsar
+Open short link el navegador mostró Destino de prueba alcanzado, conservando
+query y fragmento. Se detuvieron el proceso Node del backend y su watcher, se
+arrancó de nuevo con npm run dev y se abrió el mismo enlace: volvió a mostrar
+el destino correcto. No se recreó el enlace ni la base de datos. La captura
+del resultado se presentó a Matteo en el chat.
+
+Revisión de decisiones: mantener monolito, PostgreSQL como fuente de verdad,
+302 con no-store y resolución sin descargar el destino. No se necesitan caché,
+colas ni servicios nuevos para este recorrido. Esta revisión no implica aprobar
+T07 ni completar las pruebas E2E automatizadas previstas en T10. El destino
+del puerto 3002 es un servidor temporal de demostración, no parte del producto.
 
 ## T07 — Rechazar entradas inválidas con feedback útil
 

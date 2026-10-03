@@ -116,9 +116,11 @@ links return a plain-text 404; database query failures return a generic 503.
 The backend looks up the destination without downloading it.
 
 The form exposes **Open short link** after saving. HTTP checks verify redirection
-and persistence across a compiled-process restart. The integrated browser blocked
-the test navigation with `ERR_BLOCKED_BY_CLIENT`, so visual end-to-end navigation
-remains unverified in this environment.
+and persistence across a compiled-process restart. Checkpoint C also verified
+creation through the form, navigation to a controlled local HTML destination,
+and opening the same saved link in the browser after restarting the backend.
+The browser preserved the destination query and fragment. Automated browser
+regression tests remain planned for T10.
 
 ## Health endpoint
 
