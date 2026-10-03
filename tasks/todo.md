@@ -1,6 +1,6 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 completado en su rama; T09–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 fusionado y checkpoint D completado; T09–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
 Los comandos de T01–T08 ya funcionan; los de T09–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
@@ -248,12 +248,32 @@ Se comprueban cuatro asociaciones código/destino exactas y siete intentos total
 Se espera a todas las operaciones antes de limpiar incluso si alguna falla.
 54 pruebas unitarias, 15 de integración, build/typecheck y lint pasan. Sin
 cambios de UI, nuevas dependencias ni cambios en la base de desarrollo. El
-checkpoint D queda pendiente de su revisión específica.
+checkpoint D se revisó a continuación.
 
 ### Checkpoint D — Contrato resistente a errores
 
-- [ ] Integración y regresiones pasan; revisar evidencia de concurrencia y errores.
-- [ ] Comprobar con Matteo que la complejidad añadida responde a casos verificables.
+- [x] Integración y regresiones pasan; revisar evidencia de concurrencia y errores.
+- [x] Comprobar con Matteo que la complejidad añadida responde a casos verificables.
+
+Revisión del checkpoint D (2026-10-03), sobre main con PR #9 fusionada:
+54 pruebas unitarias y 15 de integración, build/typecheck y lint pasan. Se
+revisaron validación antes de insertar, consultas parametrizadas, unicidad de
+PostgreSQL, tres intentos acotados, respuestas 400/413/503 y limpieza de esquemas.
+No se identificaron bloqueos para este hito local.
+
+Prueba de sensibilidad: se cambió temporalmente el límite de tres intentos a
+dos. Fallaron las dos pruebas esperadas (éxito en tercer intento y agotamiento).
+Se restauró el archivo byte a byte; git confirmó ausencia de cambios en
+producción y las cuatro pruebas de resiliencia volvieron a pasar.
+
+Revisión compartida con Matteo: T07/T08 añadieron pruebas y documentación, sin
+cambiar producción ni dependencias. El generador controlado permite reproducir
+colisiones; las cuatro conexiones prueban asociaciones concurrentes; el helper
+HTTP comprueba el contrato 503; los esquemas aislados protegen los datos locales.
+No se necesitan caché, cola ni capa de reintentos adicional. Límites de evidencia:
+cuatro conexiones no equivalen a una prueba de carga; conexión cerrada no prueba
+recuperación del clúster; no se declara el proyecto listo para producción.
+T09–T12 mantienen su alcance pendiente.
 
 ## T09 — Completar copia y accesibilidad
 

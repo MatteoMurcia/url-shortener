@@ -1,6 +1,6 @@
 # URL Shortener — primera entrega
 
-Estado: T01–T04 fusionados; T05 verificado; T06 y checkpoint C verificados; T07 fusionado; T08 completado en su rama.
+Estado: T01–T04 fusionados; T05 verificado; T06 y checkpoint C verificados; T07 fusionado; T08 fusionado y checkpoint D completado.
 TypeScript y Node.js elegidos por Matteo.
 
 Modo de trabajo actual: T08 autorizado por el usuario; colisiones, fallos de
