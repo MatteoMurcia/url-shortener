@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 completado en su rama; T08–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T06 ya funcionan; los de T07–T12 son contratos futuros.
+Los comandos de T01–T07 ya funcionan; los de T08–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -200,13 +200,28 @@ del puerto 3002 es un servidor temporal de demostración, no parte del producto.
 
 Completar la validación del contrato y presentar errores comprensibles en la UI.
 
-- [ ] Aceptación: cubrir tipos incorrectos, JSON mal formado, vacío, longitud, credenciales y protocolos no permitidos.
-- [ ] Aceptación: cuerpos mayores del límite reciben 413; errores esperados usan el formato acordado.
-- [ ] Aceptación: el formulario conserva la entrada y anuncia el error sin fingir éxito.
+- [x] Aceptación: cubrir tipos incorrectos, JSON mal formado, vacío, longitud, credenciales y protocolos no permitidos.
+- [x] Aceptación: cuerpos mayores del límite reciben 413; errores esperados usan el formato acordado.
+- [x] Aceptación: el formulario conserva la entrada y anuncia el error sin fingir éxito.
 - Verificación: `npm test -- tests/validation.test.ts`; `npm run test:integration -- tests/create-link.integration.test.ts`; revisión manual de errores.
 - Dependencias: T06.
 - Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/client/App.tsx`, `tests/validation.test.ts`, `tests/create-link.integration.test.ts`.
 - Tamaño: M, 5 archivos.
+
+Evidencia T07 (2026-10-03): la implementación básica de T05 ya satisface el
+contrato; se amplió su cobertura sin modificar código de aplicación ni añadir
+dependencias. Se renombró links.test.ts a validation.test.ts y se cubrieron
+20 casos unitarios, incluido el límite exacto de 2048 caracteres tras trim.
+La prueba HTTP comprueba 21 cuerpos inválidos: tipos, vacío, formato, credenciales,
+protocolos, longitud y límite de 8 KiB con ASCII y UTF-8 multibyte. Verifica
+status, Content-Type, formato exacto del error y cero filas insertadas.
+
+Navegador real: después de crear un enlace, una URL con credenciales elimina el
+resultado previo, conserva el texto y muestra role=alert con aria-invalid=true.
+Vacío activa validación nativa; FTP recibe feedback del servidor. Corregir la
+URL limpia el error y permite crear de nuevo. Se inspeccionaron los atributos
+accesibles; no se afirma una prueba con lector de pantalla. 54 pruebas unitarias,
+11 de integración, build (incluye typecheck) y lint pasan.
 
 ## T08 — Comprobar colisiones y fallos de persistencia
 
