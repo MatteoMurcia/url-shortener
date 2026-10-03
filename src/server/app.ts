@@ -10,6 +10,28 @@ export function createApp({ database, baseUrl }: { database: Pick<Pool, 'query'>
     response.set('Cache-Control', 'no-store').json({ status: 'ok' });
   });
 
+  app.get('/r/:code', async (request, response) => {
+    response.set('Cache-Control', 'no-store');
+    const { code } = request.params;
+    if (!/^[A-Za-z0-9_-]{12}$/.test(code)) {
+      response.status(404).type('text').send('Short link not found.');
+      return;
+    }
+    try {
+      const result = await database.query<{ destination_url: string }>(
+        'SELECT destination_url FROM links WHERE code = $1', [code],
+      );
+      const link = result.rows[0];
+      if (!link) {
+        response.status(404).type('text').send('Short link not found.');
+        return;
+      }
+      response.redirect(302, link.destination_url);
+    } catch {
+      response.status(503).type('text').send('Could not open this link. Please try again.');
+    }
+  });
+
   app.post('/api/links', express.json({ limit: '8kb' }), async (request, response) => {
     try {
       const body = request.body as { url?: unknown } | undefined;

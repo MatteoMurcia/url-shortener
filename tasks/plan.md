@@ -1,7 +1,7 @@
 # Plan: URL Shortener
 
-Estado: T01–T04 fusionados; T05 completado y verificado en su rama.
-T06–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
+Estado: T01–T04 fusionados; T05 verificado; T06 y checkpoint C verificados en navegador.
+T07–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
 Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
 
 ## Objetivo y alcance
