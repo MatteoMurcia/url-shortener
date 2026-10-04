@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 fusionado y checkpoint D completado; T09 completado en su rama; T10–T12 pendientes.
+Estado: T01–T09 completados y fusionados; checkpoints A–D completados; T10 completado en su rama; checkpoint E y T11–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T09 ya funcionan; los de T10–T12 son contratos futuros.
+Los comandos de T01–T10 ya funcionan; los de T11–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -308,13 +308,33 @@ antigua de desarrollo quedó suspendida por el navegador.
 
 Verificar la aplicación completa desde el navegador usando un destino controlado.
 
-- [ ] Aceptación: prueba crea el enlace y sigue la redirección hasta un servidor local de prueba.
-- [ ] Aceptación: pruebas cubren error de validación, 404 y copia exitosa/fallida.
-- [ ] Aceptación: pruebas utilizan datos aislados y no dependen de sitios externos.
+- [x] Aceptación: prueba crea el enlace y sigue la redirección hasta un servidor local de prueba.
+- [x] Aceptación: pruebas cubren error de validación, 404 y copia exitosa/fallida.
+- [x] Aceptación: pruebas utilizan datos aislados y no dependen de sitios externos.
 - Verificación: `npx playwright install chromium`; `npm run test:e2e`; inspeccionar resultados y trazas solo si hay fallos.
 - Dependencias: T09.
-- Archivos: `playwright.config.ts`, `e2e/links.spec.ts`, `e2e/destination-server.ts`, `e2e/setup.ts`.
+- Archivos: `playwright.config.ts`, `e2e/links.spec.ts`, `e2e/fixtures.ts`, scripts/dependencias y cobertura de tipos.
 - Tamaño: M, 4 archivos.
+
+Desglose T10: configuración y fixture aislada (cinco archivos); cuatro casos
+de navegador; revisión del caso de permisos; documentación. Se reutiliza
+withTestSchema y se agrupan ambos servidores en una única fixture con limpieza
+en finally. Cada prueba tiene esquema y puertos efímeros propios. El frontend
+compilado usa Express y PostgreSQL reales; no se simulan respuestas de la API.
+Solo se intercepta el HTML del caso denegado para añadir Permissions-Policy.
+
+Evidencia T10 (2026-10-04): cuatro pruebas Chromium pasan; creación y navegación
+conservan query y fragmento, la copia se verifica leyendo el portapapeles, FTP
+muestra error y retiene la entrada, código ausente responde 404 y copia denegada
+selecciona el enlace completo. La revisión de sensibilidad detectó que faltaba
+conceder el permiso general en el caso denegado; se corrigió para aislar el efecto
+de la política HTTP. Al permitir temporalmente clipboard-write, esa prueba falló
+como se esperaba; se restauró el archivo y pasó el recorrido completo. Pasan
+56 pruebas unitarias, 15 de integración, 4 E2E, lint y build con typecheck.
+No se automatiza aún Firefox/WebKit ni el arranque de main.
+La descarga con el instalador agotó el tiempo de espera; se descargó el mismo
+Chromium Headless Shell oficial con curl a la caché local. No cambia el comando
+de instalación del proyecto ni se versionan binarios o resultados.
 
 ### Checkpoint E — Experiencia comprobada
 

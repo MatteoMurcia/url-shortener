@@ -6,7 +6,7 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T09: copyable links with accessible feedback and a manual fallback.** The React form submits destinations to Express,
+**T10: automated browser coverage for creation, redirection, validation and copying.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -128,7 +128,7 @@ and persistence across a compiled-process restart. Checkpoint C also verified
 creation through the form, navigation to a controlled local HTML destination,
 and opening the same saved link in the browser after restarting the backend.
 The browser preserved the destination query and fragment. Automated browser
-regression tests remain planned for T10.
+regression tests now cover creation and navigation to a local destination.
 
 ## Health endpoint
 
@@ -187,7 +187,33 @@ Migration tests apply SQL inside these isolated schemas; they never reset the
 shared public schema or development data.
 
 Stop the services when finished with `docker compose --profile test stop`.
-End-to-end browser tests remain planned for T10.
+
+## Browser tests
+
+With `.env` configured as above, run:
+
+```sh
+docker compose --profile test up -d --wait
+npx playwright install chromium
+npm run test:e2e
+```
+
+The command builds the app and runs four Chromium tests: create/copy/open a
+persisted link (including query and fragment), validation feedback, missing-link
+404, and manual-copy fallback when Permissions-Policy blocks clipboard writes.
+The success case reads the clipboard to verify its exact contents.
+
+Each test serves the built React assets with the real Express app and PostgreSQL,
+using the existing guarded `withTestSchema` helper. It starts its own app and HTML
+destination on ephemeral loopback ports, then closes both servers and drops its
+schema. No development server, external destination, or pre-existing links are
+required. The tests exercise `createApp`; process startup/restart remains covered
+by the separate T06 checks. Only Chromium is automated at this stage.
+
+[Playwright fixtures](https://playwright.dev/docs/test-fixtures) provide test
+isolation. Failed runs retain screenshots and traces in ignored `test-results/`;
+inspect a failure with `npx playwright show-trace <path-to-trace.zip>`.
+Browser installation requires internet access; test destinations do not.
 
 ## Migrations
 
