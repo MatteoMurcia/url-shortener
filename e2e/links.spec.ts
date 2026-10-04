@@ -36,7 +36,8 @@ test('shows a real 404 for a missing short link', async ({ page, app }) => {
   await expect(page.locator('body')).toHaveText('Short link not found.');
 });
 
-test('selects the link for manual copying when browser policy denies clipboard access', async ({ page, app }) => {
+test('selects the link for manual copying when browser policy denies clipboard access', async ({ page, context, app }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: app.origin });
   await page.route(app.origin + '/', async route => {
     const response = await route.fetch();
     await route.fulfill({ response, headers: { ...response.headers(), 'permissions-policy': 'clipboard-write=()' } });
