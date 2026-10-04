@@ -1,10 +1,10 @@
 # URL Shortener — primera entrega
 
-Estado: T01–T04 fusionados; T05 verificado; T06 y checkpoint C verificados; T07 fusionado; T08 y checkpoint D fusionados; T09 completado en su rama.
+Estado: T01–T10 fusionados; checkpoint E verificado en su rama.
 TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: T09 autorizado por el usuario; copia automática y manual,
-foco y presentación móvil/escritorio verificados. Las tareas T10–T12 siguen pendientes.
+Modo de trabajo actual: checkpoint E autorizado por el usuario; recorrido web,
+copia, foco y presentación móvil/escritorio verificados. T11–T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
@@ -88,7 +88,7 @@ compose.yaml     PostgreSQL local
 
 T02 añade desarrollo, build, arranque y pruebas a T01. T03 añade Compose y
 `npm run test:integration`. Copiar `.env.example` a `.env` antes de iniciar Compose.
-T04 añade `npm run db:migrate` y el esquema de enlaces. E2E sigue pendiente.
+T04 añade `npm run db:migrate` y el esquema de enlaces. T10 añade `npm run test:e2e`.
 
 ```sh
 npm ci
