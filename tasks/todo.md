@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 fusionado y checkpoint D completado; T09–T12 pendientes.
+Estado: T01–T04 completados y fusionados; T05 completado y verificado en navegador; T06 y checkpoint C verificados en navegador; T07 fusionado; T08 fusionado y checkpoint D completado; T09 completado en su rama; T10–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T08 ya funcionan; los de T09–T12 son contratos futuros.
+Los comandos de T01–T09 ya funcionan; los de T10–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -279,13 +279,30 @@ T09–T12 mantienen su alcance pendiente.
 
 Hacer utilizable la experiencia en móvil y mediante teclado.
 
-- [ ] Aceptación: botón de copia confirma éxito solo si Clipboard funciona; alternativa manual visible si falla.
-- [ ] Aceptación: etiquetas, foco visible y anuncios accesibles para estados y errores.
-- [ ] Aceptación: URLs largas no rompen el diseño en móvil o escritorio.
+- [x] Aceptación: botón de copia confirma éxito solo si Clipboard funciona; alternativa manual visible si falla.
+- [x] Aceptación: etiquetas, foco visible y anuncios accesibles para estados y errores.
+- [x] Aceptación: URLs largas no rompen el diseño en móvil o escritorio.
 - Verificación: recorrido manual con teclado y anchuras de 360 y 1280 píxeles; probar copia disponible y denegada; `npm run build`.
 - Dependencias: T08.
 - Archivos: `src/client/App.tsx`, `src/client/styles.css`, `src/client/main.tsx`.
 - Tamaño: M, 3 archivos.
+
+Evidencia T09 (2026-10-04): CopyLink encapsula el resultado y reinicia el estado
+de copia cuando cambia el enlace. writeText se espera antes de confirmar; al
+fallar o no estar disponible, muestra instrucciones y enfoca/selecciona el campo
+de solo lectura. No utiliza execCommand ni dependencias adicionales. El estado
+se anuncia con role=status y la ayuda se asocia mediante aria-describedby.
+
+Dos pruebas unitarias verifican espera real, éxito, denegación y API ausente.
+Navegador: copia normal comprobada leyendo el enlace exacto del portapapeles;
+build servido temporalmente con Permissions-Policy clipboard-write=() para
+verificar fallo, selección completa y copia manual mediante Ctrl+C. También se
+comprobó copia mediante Tab/Enter y foco visible de 3 px. URL de 1919 caracteres
+a 360 y 1280 px: sin desbordamiento horizontal, capturas revisadas. Se conserva
+el CSS existente porque ya cubre estos casos. No se afirma una auditoría con
+lector de pantalla. 56 pruebas unitarias, 15 de integración, build/typecheck y
+lint pasan. La revisión visual se realizó en el build de pruebas; la pestaña
+antigua de desarrollo quedó suspendida por el navegador.
 
 ## T10 — Automatizar el recorrido web
 

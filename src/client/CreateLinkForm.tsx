@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { CopyLink } from './CopyLink.js';
 
 export function CreateLinkForm() {
   const [url, setUrl] = useState('');
@@ -51,13 +52,7 @@ export function CreateLinkForm() {
         <button type="submit" disabled={saving}>{saving ? 'Saving your link…' : 'Create short link'} <span aria-hidden="true">↗</span></button>
         <p id="link-error" className="form-error" role="alert">{error}</p>
         <p role="status" className="field-hint">{saving ? 'Saving…' : shortUrl ? 'Your link has been saved.' : ''}</p>
-        {shortUrl && (
-          <div className="link-result">
-            <label className="field-label" htmlFor="short-url">Your short link</label>
-            <input id="short-url" readOnly value={shortUrl} />
-            <p className="field-hint"><a href={shortUrl}>Open short link ↗</a></p>
-          </div>
-        )}
+        {shortUrl && <CopyLink key={shortUrl} shortUrl={shortUrl} />}
       </form>
     </section>
   );

@@ -6,7 +6,7 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T08: validated links with verified collision and failure handling.** The React form submits destinations to Express,
+**T09: copyable links with accessible feedback and a manual fallback.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -83,7 +83,10 @@ set; keep that file out of Git. Generated links use `BASE_URL`, never the reques
 
 Enter a destination in the form and select **Create short link**. The form disables
 submission while saving, retains the destination on failure, and displays the
-short URL only after the API confirms persistence. Copy controls are planned for T09.
+short URL only after the API confirms persistence. Use **Copy short link** to copy the saved URL. Success is announced only after
+the clipboard write finishes. If automatic copying fails or is unavailable, the
+field is focused and selected with instructions for manual copying. The read-only
+field is always available for manual selection.
 
 `POST /api/links` accepts JSON `{"url":"https://example.com/path?q=1#part"}`.
 On success it returns HTTP 201:
@@ -167,7 +170,7 @@ times out connection acquisition after five seconds, and logs idle connection
 failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
-`npm test` runs 54 tests that need no PostgreSQL. `npm run test:integration`
+`npm test` runs 56 tests that need no PostgreSQL. `npm run test:integration`
 runs fifteen real-database tests, including schema constraints, migration history,
 concurrent runners, rollback HTTP link creation, rejected request bodies with no inserted rows, and redirection
 across server instances, forced collisions, closed connections and concurrent
