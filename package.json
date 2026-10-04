@@ -14,12 +14,14 @@
     "start": "node --env-file-if-exists=.env dist/server/main.js",
     "test": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
+    "test:e2e": "npm run build && playwright test",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix --max-warnings 0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
     "@types/express": "5.0.6",
     "@types/node": "24.19.0",
     "@types/pg": "8.23.1",
