@@ -1,12 +1,12 @@
 # URL Shortener
 
 A full-stack portfolio project built incrementally with TypeScript and Node.js.
-The first planned delivery will create persistent short links and redirect visitors
+The local application creates persistent short links and redirects visitors
 to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T11: private request logs and bounded graceful shutdown.** The React form submits destinations to Express,
+**T12: reproducible local checks, architecture decisions and GitHub CI.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -27,10 +27,34 @@ being defined; no AI capability is implemented or claimed at this stage.
 git clone https://github.com/MatteoMurcia/url-shortener.git
 cd url-shortener
 npm ci
+```
+
+Create the local environment file once:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+On macOS/Linux use `cp .env.example .env`. Preserve an existing `.env` instead
+of overwriting it. The example values work with the project's local Compose services.
+
+Run the full verification sequence:
+
+```sh
+docker compose --profile test up -d --wait
+npm run db:migrate
+npm run db:migrate
 npm run typecheck
 npm run lint
 npm test
+npm run test:integration
+npx playwright install chromium
+npm run test:e2e
 ```
+
+The second migration run should report no pending changes. `test:e2e` includes
+the production build and type checking. Then use `npm start` to open the compiled
+app, or `npm run dev` for development, as described below.
 
 `npm run lint:fix` applies available automatic lint fixes.
 
@@ -280,10 +304,14 @@ src/server/migrations.ts Transactional migration runner
 scripts/migrate.ts     Migration CLI
 db/migrations/        Versioned SQL files
 src/server/main.ts      Development/production startup
+src/server/shutdown.ts  HTTP draining and pool closure
 src/client/             React page and responsive CSS
 tests/                  Unit tests, isolated DB helper, *.integration.test.ts
+e2e/                    Chromium scenarios and isolated local servers
 compose.yaml            Local PostgreSQL instances
 vitest.config.ts        Separate unit and integration projects
+playwright.config.ts    Browser runner and failure traces
+.github/workflows/ci.yml GitHub quality checks
 ```
 
 The development integration follows [Vite's middleware API](https://vite.dev/guide/ssr.html#setting-up-the-dev-server);
@@ -292,11 +320,28 @@ the application is client-rendered and does not implement SSR.
 ## Project documentation
 
 - [First-delivery specification](SPEC.md)
+- [Implemented architecture and tradeoffs](docs/architecture.md)
 - [Architecture and implementation plan](tasks/plan.md)
 - [Task checklist and verification steps](tasks/todo.md)
 
 Planning documents are currently in Spanish. Public-facing project documentation
 and code use English.
+
+## Continuous integration
+
+[CI runs](https://github.com/MatteoMurcia/url-shortener/actions/workflows/ci.yml)
+on pull requests targeting main and pushes to main, using Ubuntu, Node 24 and the
+same PostgreSQL 17 Compose services as local development. It installs from the
+lockfile, checks types/lint, runs unit and integration tests, applies migrations
+twice, then builds and runs Chromium E2E tests. Browser installation follows the
+[Playwright CI instructions](https://playwright.dev/docs/ci).
+
+Database passwords are generated per job for disposable CI databases; no repository
+secret is required. The workflow has read-only repository permissions, pins actions
+to commit SHAs, and never deploys. Failed browser tests retain traces/screenshots
+for seven days. `.env` and database contents are never uploaded. CI success is a
+quality signal; branch protection must separately require the `quality` check if
+merging should be blocked on failure.
 
 ## Working on the project
 
