@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T10 completados y fusionados; checkpoints A–D completados; checkpoint E verificado en su rama; T11–T12 pendientes.
+Estado: T01–T10 y checkpoints A–E fusionados; T11 implementado y verificado automáticamente en su rama (smoke interactivo pendiente); T12 pendiente.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T10 ya funcionan; los de T11–T12 son contratos futuros.
+Los comandos de T01–T11 ya existen; T12 mantiene su verificación de entrega pendiente.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -364,13 +364,34 @@ da por terminadas esas tareas. Sin cambios de producto ni nuevas dependencias.
 
 Añadir señales mínimas para diagnosticar fallos y terminar el proceso limpiamente.
 
-- [ ] Aceptación: petición produce log con identificador, estado y duración sin destinos completos ni secretos.
-- [ ] Aceptación: configuración inválida impide arrancar con error comprensible; proceso cierra servidor y pool.
-- [ ] Aceptación: rutas desconocidas de API no devuelven la página frontend como respuesta exitosa.
+- [x] Aceptación: petición produce log con identificador, estado y duración sin destinos completos ni secretos.
+- [x] Aceptación: configuración inválida impide arrancar con error comprensible; cierre de servidor y pool comprobado por integración. Señales conectadas en main; smoke interactivo pendiente.
+- [x] Aceptación: rutas desconocidas de API no devuelven la página frontend como respuesta exitosa.
 - Verificación: `npm run test:integration -- tests/operations.integration.test.ts`; `npm run build`; `npm start`; comprobar cierre y logs.
 - Dependencias: T10.
-- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/db.ts`, `tests/operations.integration.test.ts`.
+- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/shutdown.ts`, `tests/operations.integration.test.ts`.
 - Tamaño: M, 4 archivos.
+
+Evidencia T11 (2026-10-04): logs JSON con UUID propio devuelto en X-Request-ID,
+método, plantilla de ruta, estado, duración y marca de respuesta abortada. No se
+registra la URL original: rutas desconocidas/estáticos usan unmatched. Pruebas
+comprueban ausencia de valores sensibles en body, headers, query, path y código.
+El 404 de API se verifica incluso con un fallback HTML montado después.
+
+El cierre espera peticiones activas antes de terminar el pool; una consulta real
+en PostgreSQL finaliza y devuelve 200 durante el drenaje. Configuración inválida
+termina procesos hijos con código 1 sin revelar la entrada. main conecta SIGINT
+y SIGTERM, evita limpieza duplicada y limita todo el cierre a 10 segundos.
+Sin nuevas dependencias ni cambios en datos de desarrollo.
+
+Pasan 56 pruebas unitarias, 19 de integración, 4 E2E, build/typecheck y lint.
+Una ejecución completa tuvo un timeout en cierre; el caso aislado y la suite
+completa posterior pasaron sin cambios de timeout. No se determinó su causa.
+La mutación temporal de aborted produjo el fallo esperado; restaurado el archivo,
+las cuatro pruebas de operación pasan. La revisión automática de permisos rechazó
+arrancar npm start en terminal interactiva sin explicar más que «blocked by policy».
+Por ello no se afirma haber probado Ctrl+C real ni el límite forzado de 10 segundos.
+Queda esa comprobación manual pendiente; la evidencia de cierre es de integración.
 
 ## T12 — Preparar una entrega reproducible
 

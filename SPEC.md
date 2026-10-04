@@ -1,10 +1,10 @@
 # URL Shortener — primera entrega
 
-Estado: T01–T10 fusionados; checkpoint E verificado en su rama.
+Estado: T01–T10 y checkpoint E fusionados; T11 implementado en su rama con smoke interactivo pendiente.
 TypeScript y Node.js elegidos por Matteo.
 
-Modo de trabajo actual: checkpoint E autorizado por el usuario; recorrido web,
-copia, foco y presentación móvil/escritorio verificados. T11–T12 siguen pendientes.
+Modo de trabajo actual: T11 autorizado; logs y cierre verificados automáticamente.
+La comprobación interactiva del cierre y T12 siguen pendientes.
 La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
 futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
 siendo propuestas; estos documentos no representan su aprobación.
