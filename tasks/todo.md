@@ -1,8 +1,8 @@
 # Tareas — primera entrega local
 
-Estado: T01–T10 y checkpoints A–E fusionados; T11 implementado y verificado automáticamente en su rama (smoke interactivo pendiente); T12 pendiente.
+Estado: T01–T11 y checkpoints A–E fusionados; T12 completado en su rama y CI verificado. Checkpoint F y smoke interactivo de cierre de T11 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T11 ya existen; T12 mantiene su verificación de entrega pendiente.
+Los comandos de T01–T12 ya existen y se verificaron localmente y en CI.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
 supera cinco archivos de implementación o una sesión enfocada, dividirla antes
 de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
@@ -395,21 +395,40 @@ Queda esa comprobación manual pendiente; la evidencia de cierre es de integraci
 
 ## T12 — Preparar una entrega reproducible
 
-Documentar el proyecto y preparar CI para cuando se publique en GitHub.
+Documentar el proyecto y ejecutar CI en el repositorio ya publicado en GitHub.
 
-- [ ] Aceptación: README explica arranque desde cero, configuración, pruebas, API y limitaciones de la demo local.
-- [ ] Aceptación: decisiones documentan códigos aleatorios, 302, PostgreSQL y ausencia de caché con sus compromisos.
-- [ ] Aceptación: workflow configura PostgreSQL de pruebas y ejecuta tipos, lint, pruebas y build; primera ejecución remota queda pendiente hasta publicar.
+- [x] Aceptación: README explica arranque desde cero, configuración, pruebas, API y limitaciones de la demo local.
+- [x] Aceptación: decisiones documentan códigos aleatorios, 302, PostgreSQL y ausencia de caché con sus compromisos.
+- [x] Aceptación: workflow configura PostgreSQL de pruebas y ejecuta tipos, lint, pruebas y build; primera ejecución remota completada con éxito.
 - Verificación: seguir README desde un entorno limpio; ejecutar `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:integration`, `npm run test:e2e`, `npm run build`; revisar workflow sin afirmar que corrió en GitHub.
 - Dependencias: T11.
 - Archivos: `README.md`, `docs/architecture.md`, `.github/workflows/ci.yml`, `.env.example`.
 - Tamaño: M, 4 archivos.
 
+Evidencia T12 (2026-10-04): clon nuevo, npm ci y .env creado desde el ejemplo;
+Compose saludable; migraciones repetidas sin cambios; 56 pruebas unitarias,
+19 de integración, 4 E2E, tipos, lint y build pasan. La verificación local reutilizó
+las bases Compose existentes y Chromium de la caché, sin borrar datos. El archivo
+.env.example ya era suficiente y se conserva. El clon permanece en tmp/t12-clean
+(ignorado): la política de ejecución rechazó su limpieza recursiva.
+
+La ejecución remota [37220391925](https://github.com/MatteoMurcia/url-shortener/actions/runs/37220391925)
+pasó en Ubuntu 24.04 con Node 24, dependencias del lockfile, PostgreSQL 17 nuevo,
+migración inicial/repetida y Chromium instalado por el runner. CI utiliza Compose,
+contraseñas efímeras generadas por job, permisos de lectura y acciones fijadas por
+SHA; conserva solo resultados de navegador fallidos durante siete días. Sin deploy.
+
+README reúne la secuencia completa y docs/architecture.md documenta las decisiones
+implementadas y sus costes. Se mantienen los límites de Chromium, accesibilidad
+manual, carga no medida, IA sin definir y servicio no desplegado. El smoke de
+Ctrl+C de T11 no se ha vuelto a ejecutar ni se declara resuelto. Checkpoint F
+requiere una revisión separada; T12 no activa protección de rama automáticamente.
+
 ### Checkpoint F — Primera entrega local terminada
 
 - [ ] Todos los criterios de SPEC.md están vinculados a evidencia y comprobaciones satisfactorias.
 - [ ] Matteo puede ejecutar y explicar el proyecto; limitaciones y pendientes quedan documentados.
-- [ ] Distinguir entrega local, publicación del repositorio y despliegue público; no afirmar que los dos últimos se han realizado.
+- [ ] Distinguir entrega local, repositorio publicado y servicio sin despliegue público.
 
 ## Trazabilidad de la especificación
 
