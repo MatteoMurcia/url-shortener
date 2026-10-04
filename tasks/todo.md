@@ -1,6 +1,6 @@
 # Tareas — primera entrega local
 
-Estado: T01–T09 completados y fusionados; checkpoints A–D completados; T10 completado en su rama; checkpoint E y T11–T12 pendientes.
+Estado: T01–T10 completados y fusionados; checkpoints A–D completados; checkpoint E verificado en su rama; T11–T12 pendientes.
 Arquitectura y definición de terminado: [plan.md](plan.md).
 Los comandos de T01–T10 ya funcionan; los de T11–T12 son contratos futuros.
 Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
@@ -338,8 +338,27 @@ de instalación del proyecto ni se versionan binarios o resultados.
 
 ### Checkpoint E — Experiencia comprobada
 
-- [ ] Flujo web automatizado pasa; revisión móvil y teclado completada.
-- [ ] Revisar con Matteo el resultado y las limitaciones antes de preparar entrega local.
+- [x] Flujo web automatizado pasa; revisión móvil y teclado completada.
+- [x] Revisar con Matteo el resultado y las limitaciones antes de preparar entrega local.
+
+Revisión del checkpoint E (2026-10-04), sobre main con PR #12 fusionada
+(`ceafd2a`): `npm run test:e2e` vuelve a pasar las cuatro pruebas Chromium y
+el build con typecheck. Se revisan creación persistida, redirección al destino
+local con query/fragmento, validación, 404 y copia exitosa/denegada.
+
+La evidencia móvil y de teclado procede de T09, realizada el mismo día:
+anchuras 360/1280 px, URL de 1919 caracteres, Tab/Enter, foco visible y alternativa
+manual. Se volvió a inspeccionar la captura móvil; no se repitió esa interacción.
+Git confirma que T10 no modificó src/client ni src/server, por lo que esa revisión
+corresponde también al código actual. T10 añade la regresión automatizada.
+
+Resultado y límites compartidos con Matteo: el núcleo crear/copiar/abrir está
+comprobado para la demo local. Automatización solo en Chromium; sin auditoría
+con lector de pantalla ni afirmaciones de carga o preparación para producción.
+El repositorio ya es público, pero el servicio no está desplegado. La IA sigue
+fuera del núcleo y pendiente de definir. T11 completará logs y cierre ordenado;
+T12 completará documentación de entrega y CI. Este checkpoint no implementa ni
+da por terminadas esas tareas. Sin cambios de producto ni nuevas dependencias.
 
 ## T11 — Completar operación local
 
