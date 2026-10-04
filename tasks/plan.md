@@ -1,7 +1,7 @@
 # Plan: URL Shortener
 
-Estado: T01–T10 fusionados; checkpoint E verificado en su rama.
-T11–T12 siguen pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
+Estado: T01–T10 y checkpoint E fusionados; T11 implementado en su rama con
+verificación automática y smoke interactivo pendiente; T12 pendiente. Fuente de requisitos: [SPEC.md](../SPEC.md).
 Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
 
 ## Objetivo y alcance

@@ -1,10 +1,26 @@
 import express, { type ErrorRequestHandler } from 'express';
+import { randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
 import { createLink, InvalidDestinationError } from './links.js';
 
 export function createApp({ database, baseUrl }: { database: Pick<Pool, 'query'>; baseUrl: string }) {
   const app = express();
   app.disable('x-powered-by');
+  app.use((request, response, next) => {
+    const requestId = randomUUID();
+    const started = performance.now();
+    response.set('X-Request-ID', requestId);
+    response.once('close', () => {
+      console.info(JSON.stringify({
+        event: 'http_request', requestId, method: request.method,
+        route: request.route?.path ?? 'unmatched',
+        status: response.statusCode,
+        durationMs: Math.round((performance.now() - started) * 100) / 100,
+        aborted: !response.writableFinished,
+      }));
+    });
+    next();
+  });
 
   app.get('/api/health', (_request, response) => {
     response.set('Cache-Control', 'no-store').json({ status: 'ok' });

@@ -6,7 +6,7 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T10: automated browser coverage for creation, redirection, validation and copying.** The React form submits destinations to Express,
+**T11: private request logs and bounded graceful shutdown.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -136,6 +136,30 @@ regression tests now cover creation and navigation to a local destination.
 This reports process liveness, not database readiness. Unknown `/api/*` routes
 return a JSON 404 rather than frontend HTML.
 
+## Local operations
+
+Each HTTP response includes a generated `X-Request-ID`. A JSON `http_request`
+log records that ID, method, matched route template, status, duration in milliseconds
+and whether the response was aborted. Incoming request IDs are not trusted.
+Bodies, headers, destination URLs, short codes and query strings are omitted;
+static files and unknown routes are labeled `unmatched` instead of logging raw paths.
+For aborted responses, status is the server's current value, not proof of delivery.
+
+Invalid configuration stops startup with exit code 1 and a concise error without
+echoing input. Asset preparation and listen failures also exit unsuccessfully.
+On SIGINT/SIGTERM, the app stops accepting HTTP connections, drains active requests,
+closes Vite when used, then ends the PostgreSQL pool. Repeated signals do not start
+another cleanup. Lifecycle events are `shutdown_started`, `shutdown_complete`,
+`shutdown_failed` and `shutdown_timeout`. A 10-second deadline forces exit code 1
+if cleanup stalls; requests still running at that deadline can be interrupted.
+
+Use Ctrl+C in the terminal running the server. On Windows, killing a process with
+SIGTERM through another process forcibly terminates it; this is not evidence of
+graceful cleanup ([Node signal documentation](https://nodejs.org/docs/latest-v24.x/api/process.html#signal-events)).
+T11 integration tests verify HTTP draining with an active PostgreSQL query, pool
+closure, private logs, JSON API 404s and invalid-config process exits. The interactive
+`npm start`/Ctrl+C smoke check was blocked by the execution policy and remains unverified.
+
 ## Local PostgreSQL
 
 Copy `.env.example` to `.env` once (`Copy-Item .env.example .env` in PowerShell,
@@ -171,10 +195,11 @@ failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
 `npm test` runs 56 tests that need no PostgreSQL. `npm run test:integration`
-runs fifteen real-database tests, including schema constraints, migration history,
+runs nineteen integration tests, including real-database schema constraints, migration history,
 concurrent runners, rollback HTTP link creation, rejected request bodies with no inserted rows, and redirection
 across server instances, forced collisions, closed connections and concurrent
-creation through independent database connections. Both
+creation through independent database connections, request logging, shutdown and
+invalid startup configuration. Both
 commands load `.env` if present; existing process environment values take precedence.
 Missing database configuration or an unavailable database causes integration
 tests to fail, not skip.
