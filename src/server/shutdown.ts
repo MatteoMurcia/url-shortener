@@ -10,7 +10,12 @@ export async function closeApplication(server: Server, database: Pool, closeDeve
   });
   try {
     // Vite owns upgraded HMR sockets that HTTP server.close does not close.
-    await Promise.all([drained, closeDevelopment?.()]);
+    const outcomes = await Promise.allSettled([
+      drained,
+      Promise.resolve().then(() => closeDevelopment?.()),
+    ]);
+    const failed = outcomes.find(outcome => outcome.status === 'rejected');
+    if (failed?.status === 'rejected') throw failed.reason;
   } finally {
     await database.end();
   }
