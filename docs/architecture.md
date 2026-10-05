@@ -62,6 +62,26 @@ does not certify a destination as safe. The backend never downloads the URL;
 the visitor's browser follows Location, preserving path, query and fragment.
 BASE_URL controls generated links independently of an untrusted Host header.
 
+## Rate limiting before database access
+
+Use express-rate-limit on the creation and redirect routes, before JSON parsing
+and database access. Separate 60-second quotas allow 30 creation attempts and
+120 redirect attempts per client IP; failed attempts count too. These are initial
+portfolio defaults, not measured capacity targets. Health checks remain exempt.
+The library handles window expiry, retry headers and IPv6 /56 grouping without
+custom security-sensitive counter or address parsing code.
+
+Each application owns its in-memory counters. Restarting clears them; multiple
+processes would multiply the effective allowance. A shared store or ingress
+policy is required before scaling. Proxy trust stays disabled: client-supplied
+forwarding headers cannot change the quota key. A future proxy deployment must
+define and verify its trusted hops. NAT users share quotas. IPs are held only in
+temporary counters, never added to logs or PostgreSQL. This is a basic abuse
+control, not protection against distributed attacks.
+
+References: [CodeQL guidance](https://codeql.github.com/codeql-query-help/javascript/js-missing-rate-limiting/)
+and [limiter configuration](https://express-rate-limit.mintlify.app/reference/configuration).
+
 ## No cache, queues or distributed services
 
 The indexed lookup is adequate for the demonstrated flow. Redis would add stale

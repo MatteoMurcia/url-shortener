@@ -70,6 +70,19 @@ Requirements: [SPEC.md](../SPEC.md). Sequence: [Implementation plan](plan.md).
   ten-second deadline exited with code 1. A new desktop screenshot was captured
   from the verified browser flow and inspected.
 
+## Post-release security follow-up
+
+- [x] Add independent per-client creation and redirect quotas for CodeQL alert #1.
+- [x] Verify rejection before database access, retry headers, quota expiry,
+  independent routes, health availability and resistance to spoofed proxy headers.
+- [x] Document process-local counters and proxy/scaling requirements.
+- 2026-10-05: Both new HTTP regression cases failed before the fix and passed
+  afterward. Local validation passed: 60 unit tests, 19 integration tests, four
+  Chromium scenarios, typecheck, lint, build and zero known npm audit findings.
+  The first integration run found stopped PostgreSQL containers; starting the
+  Compose services restored the required environment. CodeQL closure on main
+  remains dependent on merging the fix and completing the default-branch scan.
+
 ## Verification boundaries
 
 Chromium is the only automated browser. Process signal/deadline checks target Linux;

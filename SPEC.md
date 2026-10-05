@@ -48,6 +48,10 @@ provides local databases. Exact package versions are recorded in package-lock.js
   and end the pool. Bound shutdown to ten seconds; forced termination exits with code 1.
 - Keep development and test data separate; tests may delete only their own schemas.
 - Unknown API routes return JSON 404, never the frontend as a successful response.
+- Limit each client IP to 30 creation and 120 redirect attempts per 60 seconds,
+  independently. Reject excess requests with 429 and Retry-After before parsing
+  bodies or accessing PostgreSQL. Keep health checks available and do not trust
+  client-supplied proxy headers. Counters are local to one application process.
 
 ## Delivery criteria
 
