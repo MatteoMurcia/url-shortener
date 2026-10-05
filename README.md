@@ -377,26 +377,6 @@ secret is required. The workflow has read-only repository permissions, pins acti
 to commit SHAs, and never deploys. Failed browser tests retain traces/screenshots
 for seven days. `.env` and database contents are never uploaded.
 
-## Repository security and publication
-
-The GitHub repository is public. Repository settings verified on 2026-10-05:
-
-- The active main ruleset requires a pull request and an up-to-date passing
-  `quality` check, with no bypass actors. Force pushes and branch deletion are blocked.
-- Actions defaults to read-only permissions and cannot approve pull requests.
-  Workflows from all external contributors require approval. Only GitHub-owned
-  actions are allowed, and full commit SHA pinning is required.
-- CodeQL default setup, Dependabot alerts, secret scanning and push protection
-  are enabled. Automatic Dependabot security-update PRs are not enabled.
-
-These settings belong to this GitHub repository and are not inherited by clones
-or forks. The rate-limiting finding was fixed on main after PR #17; the dated
-scan evidence is recorded in the [delivery checklist](tasks/todo.md).
-
-Source publication does not deploy the application. No LICENSE file is included,
-and the project does not claim open-source licensing. The package's `private: true`
-setting prevents accidental npm publication; it does not make GitHub private.
-
 ## Working on the project
 
 Keep changes focused on one task, run the relevant checks, and record the result

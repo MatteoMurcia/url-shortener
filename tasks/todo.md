@@ -85,9 +85,7 @@ Requirements: [SPEC.md](../SPEC.md). Sequence: [Implementation plan](plan.md).
   merged. [Main CI](https://github.com/MatteoMurcia/url-shortener/actions/runs/37326997136)
   and [CodeQL](https://github.com/MatteoMurcia/url-shortener/actions/runs/37326996302)
   passed. CodeQL marked alert #1 as fixed on main.
-- 2026-10-05: Repository visibility was verified as public. Main requires PRs
-  and a passing, up-to-date quality check; force pushes and deletion are blocked.
-  Current security settings are recorded in [README](../README.md#repository-security-and-publication).
+- 2026-10-05: Repository visibility was verified as public.
 
 ## Verification boundaries
 
