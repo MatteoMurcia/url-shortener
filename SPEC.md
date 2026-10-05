@@ -1,6 +1,6 @@
 # Product specification
 
-Status: local portfolio release complete; acceptance evidence is recorded in [Delivery checklist](tasks/todo.md).
+Status: public source repository; local portfolio release complete. Acceptance evidence is recorded in [Delivery checklist](tasks/todo.md).
 
 ## Purpose
 

@@ -1,6 +1,6 @@
 # Delivery checklist
 
-Status: T01–T12 implemented and merged. Checkpoint F completed on the final review branch.
+Status: T01–T12, checkpoint F and the rate-limiting follow-up are merged into main.
 Scope: a locally runnable full-stack portfolio application; no public service deployment.
 Requirements: [SPEC.md](../SPEC.md). Sequence: [Implementation plan](plan.md).
 
@@ -80,8 +80,14 @@ Requirements: [SPEC.md](../SPEC.md). Sequence: [Implementation plan](plan.md).
   afterward. Local validation passed: 60 unit tests, 19 integration tests, four
   Chromium scenarios, typecheck, lint, build and zero known npm audit findings.
   The first integration run found stopped PostgreSQL containers; starting the
-  Compose services restored the required environment. CodeQL closure on main
-  remains dependent on merging the fix and completing the default-branch scan.
+  Compose services restored the required environment.
+- 2026-10-05: [PR #17](https://github.com/MatteoMurcia/url-shortener/pull/17)
+  merged. [Main CI](https://github.com/MatteoMurcia/url-shortener/actions/runs/37326997136)
+  and [CodeQL](https://github.com/MatteoMurcia/url-shortener/actions/runs/37326996302)
+  passed. CodeQL marked alert #1 as fixed on main.
+- 2026-10-05: Repository visibility was verified as public. Main requires PRs
+  and a passing, up-to-date quality check; force pushes and deletion are blocked.
+  Current security settings are recorded in [README](../README.md#repository-security-and-publication).
 
 ## Verification boundaries
 
@@ -92,7 +98,6 @@ runs passed without increasing timeouts. The cause was not established.
 One local unit run also failed to start several workers; the unchanged full rerun
 and clean Linux CI passed. These observations are not hidden by retries or skipped tests.
 
-The repository was verified as private on 2026-10-05. Changing GitHub visibility is
-separate from completing this release. No public service is deployed and no LICENSE
+The source repository is public. No public service is deployed and no LICENSE
 file is included. The interface does not claim open-source licensing. No AI capability
 is implemented.

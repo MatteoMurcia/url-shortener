@@ -1,6 +1,7 @@
 # Implementation plan
 
-Status: T01–T12 implemented; checkpoint F complete. Evidence is recorded in [Delivery checklist](todo.md).
+Status: T01–T12 and checkpoint F merged; source repository public. The rate-limiting
+follow-up is also merged. Evidence is recorded in [Delivery checklist](todo.md).
 Requirements: [Product specification](../SPEC.md). Design: [Architecture decisions](../docs/architecture.md).
 
 ## Approach
@@ -19,7 +20,7 @@ serves static assets. The browser follows redirects; the backend does not fetch 
 | Module | Responsibility |
 | --- | --- |
 | src/client | Form, submission states, result and clipboard fallback |
-| src/server/app.ts | HTTP contract, request logging and error responses |
+| src/server/app.ts | HTTP contract, request limits, request logging and error responses |
 | src/server/links.ts | Destination validation, random codes and insertion retries |
 | src/server/db.ts | Validated PostgreSQL connection pool |
 | src/server/migrations.ts | Versioned SQL in a locked transaction |
