@@ -1,178 +1,73 @@
-# Plan: URL Shortener
+# Implementation plan
 
-Estado: T01–T11 y checkpoint E fusionados; T12 completado en su rama con CI
-verificado. Checkpoint F y smoke interactivo de cierre pendientes. Fuente de requisitos: [SPEC.md](../SPEC.md).
-Lista de tareas: [todo.md](todo.md), única fuente del estado de implementación.
+Status: T01–T12 implemented; checkpoint F complete. Evidence is recorded in [Delivery checklist](todo.md).
+Requirements: [Product specification](../SPEC.md). Design: [Architecture decisions](../docs/architecture.md).
 
-## Objetivo y alcance
+## Approach
 
-Crear evidencia pública de ingeniería full stack mediante un producto pequeño
-que pueda ejecutarse, probarse y explicarse. El primer hito propuesto es local:
-crear un enlace desde la interfaz, persistirlo y abrir su destino.
+Build one complete flow in small, independently verifiable increments. Begin with
+runtime and data foundations, connect the form to persistent creation and redirects,
+then verify failure paths, accessibility and operation. Avoid speculative services
+or generic layers for a single-table application.
 
-Decidido por el usuario: TypeScript y Node.js. Las siguientes decisiones son
-propuestas revisables. No estimamos fechas sin acordar dedicación y alcance.
+## Architecture
 
-## Arquitectura propuesta
+A single Node process serves the React assets and Express routes. PostgreSQL is
+the source of truth. Vite runs as development middleware; the compiled application
+serves static assets. The browser follows redirects; the backend does not fetch destinations.
 
-Monolito modular con un proceso backend y una base de datos. Un único paquete npm
-y archivo de bloqueo simplifican la instalación. React es el cliente web;
-Express concentra HTTP; PostgreSQL mantiene los enlaces.
+| Module | Responsibility |
+| --- | --- |
+| src/client | Form, submission states, result and clipboard fallback |
+| src/server/app.ts | HTTP contract, request logging and error responses |
+| src/server/links.ts | Destination validation, random codes and insertion retries |
+| src/server/db.ts | Validated PostgreSQL connection pool |
+| src/server/migrations.ts | Versioned SQL in a locked transaction |
+| src/server/main.ts | Configuration, assets, listening and process signals |
+| src/server/shutdown.ts | HTTP draining and resource cleanup |
 
-```mermaid
-flowchart LR
-    B[Navegador: React] -->|POST /api/links| A[Express: rutas HTTP]
-    V[Visitante del enlace] -->|GET /r/:code| A
-    A --> L[Módulo links: validación y creación]
-    L --> R[Consultas SQL parametrizadas]
-    R --> D[(PostgreSQL)]
-    A -->|302 Location| V
-    V -->|Petición posterior del navegador| E[Sitio de destino]
-```
+## Delivery sequence
 
-El navegador visita el destino tras recibir la redirección. El backend no
-descarga páginas externas, por lo que el núcleo no necesita un cliente HTTP
-para procesar URLs ni un sistema de extracción de contenido.
+| Task | Increment | Depends on | Verification |
+| --- | --- | --- | --- |
+| T01 | Strict TypeScript, package scripts and lint | — | Install, typecheck, lint |
+| T02 | Shared-origin React/Express runtime | T01 | Development and compiled startup |
+| T03 | Compose databases and isolated test configuration | T02 | Health checks and database identity |
+| T04 | Links schema and migration history | T03 | Repeatability, constraints and rollback |
+| T05 | Create and persist links from the form | T04 | HTTP creation and pending UI state |
+| T06 | Resolve saved codes | T05 | Redirects, 404/503 and restart persistence |
+| T07 | Input validation and useful feedback | T06 | Boundary cases and request size |
+| T08 | Collisions and concurrency | T07 | Forced collisions and independent connections |
+| T09 | Copying and accessible presentation | T08 | Clipboard success/fallback, keyboard and viewport review |
+| T10 | Automated browser flow | T09 | Chromium with local destinations |
+| T11 | Request logs and graceful shutdown | T10 | Privacy, active requests and startup errors |
+| T12 | Reproducible delivery and CI | T11 | Fresh checkout and clean CI runner |
 
-### Responsabilidades y límites
+Checkpoints A–F review runtime, data, end-to-end behavior, resilience, user experience
+and final delivery respectively. The checklist records outcomes, not estimated effort.
 
-| Elemento | Responsabilidad | Decisión propuesta y motivo |
-|---|---|---|
-| `src/client` | Formulario, estados y copia | React + Vite; coincide con la experiencia del portfolio |
-| `src/server/app.ts` | Montar rutas y manejar errores HTTP | Express 5; sin lógica de dominio en el arranque |
-| `src/server/links.ts` | Validar, generar códigos y coordinar persistencia | Funciones explícitas; extraer archivos solo cuando resulte útil |
-| `src/server/db.ts` | Pool y consultas parametrizadas | `pg`; SQL visible y sin repositorio genérico |
-| `src/server/main.ts` | Configuración, arranque y cierre | Separado de la aplicación para probar sin abrir un puerto fijo |
-| `db/migrations` | Evolución del esquema | SQL versionado, historial y ejecución explícita |
+## Definition of done
 
-No se necesitan microservicios, colas ni Redis para demostrar este flujo.
-Reconsiderar caché solo después de medir las consultas y detectar una necesidad.
+- Acceptance criteria have executable checks or explicitly scoped manual evidence.
+- Relevant tests, types, lint and build pass; CI verifies the submitted revision.
+- Errors are controlled, secrets excluded and test data isolated.
+- Changes remain focused and independently reviewable in version control.
+- Documentation describes actual behavior, tradeoffs and verification limits.
 
-### Datos
+## Risk management
 
-Tabla inicial propuesta `links`:
+| Risk | Mitigation |
+| --- | --- |
+| Concurrent inserts overwrite links | Primary key and atomic INSERT ON CONFLICT |
+| Tests damage development data | Separate database, guarded schema creation and cleanup |
+| Shutdown interrupts work prematurely | HTTP drain before pool closure, regression and process tests |
+| Sensitive data enters logs | Allowlisted fields and privacy assertions |
+| Scope grows beyond a useful demonstration | Complete one flow; defer unrelated features |
+| Public shortener is abused | Keep hosting outside this release; define controls before exposure |
 
-| Columna | Tipo | Regla |
-|---|---|---|
-| `code` | `varchar(12)` | Clave primaria; código aleatorio base64url de 9 bytes |
-| `destination_url` | `text` | No nula; validada antes de persistir |
-| `created_at` | `timestamptz` | No nula, generada al insertar |
+## Deferred work
 
-Una sola identidad (`code`) basta para este alcance. No deduplicar destinos:
-dos creaciones pueden generar dos enlaces diferentes. No añadir anticipadamente
-columnas de usuarios o analítica. Incorporarlas con migraciones cuando se defina
-su comportamiento. El índice de la clave primaria resuelve la búsqueda por código.
-
-Propuesta: hasta 3 intentos de inserción ante conflicto de clave; distinguir ese
-conflicto de otros errores de base de datos. No consultar primero si el código
-existe: la restricción única arbitra las creaciones concurrentes.
-
-### HTTP y configuración
-
-El contrato funcional está en SPEC.md. Refinamientos propuestos:
-
-- `POST /api/links`: 201 al persistir, 400 para datos inválidos, 413 para JSON
-  demasiado grande y 503 si la persistencia no está disponible o se agotan
-  los reintentos. Errores JSON con `error.code` y `error.message` estables.
-- `GET /r/:code`: 302, `Cache-Control: no-store`; 404 para códigos mal formados
-  o inexistentes; 503 para fallo de persistencia. Una consulta directa por código.
-- La validación usa `URL`, limita la entrada y acepta únicamente HTTP/HTTPS sin
-  credenciales. No se presenta como comprobación de que el destino sea seguro.
-- JSON limitado a 8 KiB. `BASE_URL` configura el origen público; `DATABASE_URL`
-  y `PORT` se validan al arrancar. Credenciales únicamente en el entorno.
-- En desarrollo, Express incorpora Vite como middleware y atiende primero la
-  API. Ambos comparten origen y puerto; no se necesita un proxy. En el build
-  local, Express sirve los archivos estáticos de `dist/client`. El futuro
-  `BASE_URL` usará ese origen compartido.
-- Las rutas API y de redirección se resuelven antes de servir la interfaz;
-  una ruta API desconocida no devuelve accidentalmente el HTML de React.
-
-### Operación y límites
-
-Docker Compose proporciona PostgreSQL 17 local con volumen persistente (puerto
-15432). Las pruebas usan otra instancia temporal en el puerto 15433, bajo perfil
-`test`, con base y credenciales distintas. `TEST_DATABASE_URL` es obligatorio y
-el helper solo admite la base `url_shortener_test`, sin parámetros de URL y con
-nombre distinto a desarrollo. T04 añade un esquema generado por prueba, comprueba
-el nombre de la base conectada y limita la limpieza a ese esquema. El ejecutor
-registra migraciones por nombre y aplica las pendientes en una transacción con
-bloqueo advisory. Los consumidores son responsables de cerrar sus pools.
-Las migraciones se aplican antes de arrancar, no como efecto de cada petición.
-
-Logs del backend con identificador de petición, ruta sin query, estado y duración;
-no registrar destinos completos, cuerpos ni secretos. Cerrar servidor y pool
-ordenadamente al terminar el proceso. No incorporar todavía una plataforma de
-observabilidad ni afirmar objetivos de rendimiento sin mediciones.
-
-## Dependencias y orden de construcción
-
-```mermaid
-flowchart TD
-    T01[T01 Herramientas] --> T02[T02 Aplicación mínima]
-    T02 --> T03[T03 Entorno de datos y pruebas]
-    T03 --> T04[T04 Migración reproducible]
-    T04 --> T05[T05 Crear un enlace desde la UI]
-    T05 --> T06[T06 Abrir un enlace corto]
-    T06 --> T07[T07 Datos inválidos y errores visibles]
-    T07 --> T08[T08 Colisiones y fallos de persistencia]
-    T08 --> T09[T09 Copia y accesibilidad]
-    T09 --> T10[T10 Recorrido web automatizado]
-    T10 --> T11[T11 Operación local]
-    T11 --> T12[T12 Documentación y CI]
-```
-
-T01–T04 son la preparación mínima; no construyen funcionalidades futuras.
-T05 y T06 recorren datos, API y experiencia del usuario. A partir de T06 se puede
-demostrar el caso principal. T07–T12 lo hacen más fiable y reproducible.
-Revisar resultados cada dos tareas, sin marcar ninguna como hecha por compilar.
-
-Este orden favorece trabajo secuencial y comprensión del proyecto. Más adelante,
-documentación y revisión visual podrían avanzar de forma independiente sobre
-contratos estables. No se asignan agentes ni se ejecuta trabajo paralelo ahora.
-
-## Definición de terminado para una tarea futura
-
-- Criterios de aceptación satisfechos y comportamiento verificado en ejecución.
-- Pruebas relevantes de comportamiento y regresión pasan; tipos, lint y build
-  pasan cuando sus herramientas estén configuradas.
-- Errores visibles y controlados; entradas y secretos tratados correctamente.
-- Documentación actualizada cuando cambia un contrato, comando o decisión.
-- Evidencia registrada de lo comprobado y de cualquier limitación pendiente.
-- Cambios pequeños revisables, sin funcionalidad ajena a la tarea.
-
-## Riesgos y decisiones pendientes
-
-| Riesgo o incógnita | Impacto | Tratamiento propuesto |
-|---|---|---|
-| Stack adicional aún no aprobado | Retrabajo | Revisar Express, React/Vite, PostgreSQL y SQL directo antes de implementar |
-| Docker no disponible localmente | Bloquea integración | Comprobar al iniciar; alternativa PostgreSQL instalado localmente |
-| Acortador público usado para abuso | Alto | Mantener primer hito local; definir límites de uso, bloqueo y reporte antes de publicar |
-| Reinicios o concurrencia pierden datos | Alto | Persistencia real, clave única y pruebas tempranas |
-| Pruebas borran datos de desarrollo | Alto | Base de pruebas explícita y comprobación antes de limpiar |
-| Portfolio acumula funcionalidades sin acabar | Alto | Terminar y demostrar el núcleo antes de ampliar |
-| IA sin utilidad ni evaluación | Medio | Elegir caso de uso y criterios antes de añadir proveedor o agente |
-
-## Hoja de ruta posterior, todavía sin desglosar
-
-1. Cuentas y gestión privada: decidir proveedor o sesiones, permisos y
-   operaciones sobre enlaces. Se apoya en el núcleo.
-2. Analítica: definir qué representa un clic, tratamiento de bots, retención
-   y privacidad. Se apoya en redirecciones y permisos.
-3. IA: posible consulta de estadísticas en lenguaje natural, pendiente de
-   confirmar. Exigir acceso limitado por usuario, evaluación y presupuesto.
-4. Demo pública: elegir hosting, presupuesto, protección frente a abuso,
-   backups y señales operativas. Documentar mediciones y limitaciones reales.
-
-Estos puntos no son tareas autorizadas ni dependencias del primer hito local.
-La publicación de código y la exposición pública del servicio son decisiones
-distintas; el repositorio puede documentarse antes de desplegar el servicio.
-
-## Preguntas para la siguiente revisión
-
-- ¿El primer hito local descrito encaja con el producto que Matteo quiere mostrar?
-- ¿Mantener el stack propuesto o comparar alguna alternativa concreta?
-- ¿La IA formará parte del producto, del proceso de desarrollo o de ambos?
-- ¿Qué dedicación y presupuesto condicionarán las entregas posteriores?
-
-El usuario fusionó T03 y autorizó T04. Esa autorización no inicia automáticamente
-T05 ni las entregas posteriores; avanzar según sus peticiones.
+Accounts, analytics, expiry, caching and AI require separate requirements. Add them
+only for an identified use case. Any AI feature must define useful behavior,
+evaluation examples, access restrictions and a cost budget before choosing a provider.
+Public hosting additionally requires operational ownership and recovery procedures.
