@@ -1,7 +1,7 @@
 # Architecture decisions
 
-Status: implemented local portfolio application. Repository visibility is separate
-from service deployment; no public service is deployed. There are no accounts,
+Status: public source repository with an implemented local portfolio application.
+No public service is deployed. There are no accounts,
 analytics or AI features.
 
 ## One application, one source of truth

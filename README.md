@@ -6,14 +6,15 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**Local portfolio release.** The React form submits destinations to Express,
+**Public repository; locally runnable portfolio release.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
 The form has been verified in a real browser, including a delayed database insert,
 repeat submission attempts, error feedback, keyboard submission and mobile layout.
-Saved links now open their persisted destination through an uncached 302 response. There is no public deployment. The AI feature is still
-being defined; no AI capability is implemented or claimed at this stage.
+Saved links open their persisted destination through an uncached 302 response.
+Creation and redirection have independent per-client request limits. No public
+service is deployed. AI is outside the implemented scope.
 
 ![Desktop preview of the link creation and copy flow](docs/images/preview.png)
 
@@ -22,7 +23,7 @@ being defined; no AI capability is implemented or claimed at this stage.
 - Keep a single deployable application with explicit HTTP, domain and database responsibilities.
 - Let PostgreSQL enforce uniqueness under concurrent creation; retry only collisions.
 - Verify failures as well as successful flows with real databases and controlled browser destinations.
-- Treat accessible feedback, private logs and bounded shutdown as part of the feature.
+- Treat accessible feedback, request-log privacy and bounded shutdown as part of the feature.
 - Document tradeoffs and defer caching, queues and additional services until justified.
 
 See [architecture decisions](docs/architecture.md) for the reasoning and limits.
@@ -251,9 +252,10 @@ times out connection acquisition after five seconds, and logs idle connection
 failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
-`npm test` runs 58 tests that need no PostgreSQL. `npm run test:integration`
+`npm test` runs 60 tests that need no PostgreSQL, including HTTP rate-limit
+regressions. `npm run test:integration`
 runs nineteen integration tests, including real-database schema constraints, migration history,
-concurrent runners, rollback HTTP link creation, rejected request bodies with no inserted rows, and redirection
+concurrent runners, rollback, HTTP link creation, rejected request bodies with no inserted rows, and redirection
 across server instances, forced collisions, closed connections and concurrent
 creation through independent database connections, request logging, shutdown and
 invalid startup configuration. Both
@@ -289,8 +291,9 @@ Each test serves the built React assets with the real Express app and PostgreSQL
 using the existing guarded `withTestSchema` helper. It starts its own app and HTML
 destination on ephemeral loopback ports, then closes both servers and drops its
 schema. No development server, external destination, or pre-existing links are
-required. The tests exercise `createApp`; process startup/restart remains covered
-by the separate T06 checks. Only Chromium is automated at this stage.
+required. The tests exercise `createApp`; startup failures are covered by integration
+tests and compiled-process lifecycle behavior by Linux CI. The manual restart
+check is recorded in the delivery checklist. Only Chromium is automated.
 
 [Playwright fixtures](https://playwright.dev/docs/test-fixtures) provide test
 isolation. Failed runs retain screenshots and traces in ignored `test-results/`;
@@ -372,9 +375,7 @@ twice, then builds and runs Chromium E2E and Linux process lifecycle checks. Bro
 Database passwords are generated per job for disposable CI databases; no repository
 secret is required. The workflow has read-only repository permissions, pins actions
 to commit SHAs, and never deploys. Failed browser tests retain traces/screenshots
-for seven days. `.env` and database contents are never uploaded. CI success is a
-quality signal; branch protection must separately require the `quality` check if
-merging should be blocked on failure.
+for seven days. `.env` and database contents are never uploaded.
 
 ## Working on the project
 
@@ -384,6 +385,3 @@ the PR explains the progression. Use short-lived branches and preserve the small
 commits when merging if that history should remain visible on main.
 Do not commit credentials, local environment files,
 dependencies, or generated output.
-
-The package is marked `private` to prevent accidental npm publication; that setting
-does not control the visibility of the GitHub repository.
