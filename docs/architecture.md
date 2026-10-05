@@ -1,7 +1,8 @@
 # Architecture decisions
 
-Status: implemented local demo. This repository is public; the service is not
-publicly deployed. There are no accounts, analytics or AI features yet.
+Status: implemented local portfolio application. Repository visibility is separate
+from service deployment; no public service is deployed. There are no accounts,
+analytics or AI features.
 
 ## One application, one source of truth
 
@@ -74,15 +75,19 @@ Unit tests cover validation/configuration and clipboard behavior. Integration
 tests use a separate PostgreSQL instance and a fresh schema per data test, with
 guards preventing cleanup of development data. Chromium tests use real routes,
 built React assets and local destinations on ephemeral ports. They mount the app
-rather than launching main; process startup validation is tested separately.
+rather than launching main. Startup validation is tested separately, and Linux CI
+starts the compiled main process to verify real signals and the shutdown deadline.
 
 Request logs use generated IDs, route templates, status and duration; raw URLs,
 headers, bodies and codes are omitted. Shutdown drains requests and closes the
-pool, with a 10-second forced-exit limit. Health reports liveness, not readiness.
+pool, with a 10-second forced-exit limit. Development cleanup and HTTP draining are
+both awaited even when one fails, so the pool cannot close prematurely. Health
+reports liveness, not readiness.
 
 CI verifies the local contract, not production readiness. Current limits include
-Chromium-only automation, no screen-reader audit or load test, and the T11
-interactive Ctrl+C smoke still pending. Before public deployment, define abuse
+Chromium-only automation, no screen-reader audit or load test, and no verification
+of interactive Windows Ctrl+C. Linux process signals are covered in CI.
+Before public deployment, define abuse
 controls, authentication/ownership if needed, TLS, backups, readiness and operating
 budgets. Any AI capability needs a useful scope, evaluation set and cost/data
 boundaries before choosing a provider.

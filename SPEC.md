@@ -1,156 +1,68 @@
-# URL Shortener — primera entrega
+# Product specification
 
-Estado: T01–T11 y checkpoint E fusionados; T12 completado en su rama con CI verificado.
-TypeScript y Node.js elegidos por Matteo.
+Status: local portfolio release complete; acceptance evidence is recorded in [Delivery checklist](tasks/todo.md).
 
-Modo de trabajo actual: T12 autorizado; documentación y CI verificados.
-La comprobación interactiva del cierre y el checkpoint F siguen pendientes.
-La arquitectura propuesta está en [tasks/plan.md](tasks/plan.md) y las tareas
-futuras en [tasks/todo.md](tasks/todo.md). El resto del stack y el alcance siguen
-siendo propuestas; estos documentos no representan su aprobación.
+## Purpose
 
-## Objetivo
+Demonstrate a complete, maintainable full-stack feature: create a persistent short
+link and resolve it to its destination. Keep the implementation small enough to
+review, run locally and explain, with explicit tradeoffs and repeatable tests.
 
-Construir una primera entrega completa que permita introducir una URL, obtener
-un enlace corto persistente y usarlo para llegar al destino. El repositorio debe
-servir como evidencia de desarrollo full stack: comportamiento comprobable,
-interfaz accesible y decisiones técnicas explicadas.
+## Scope
 
-Supuestos propuestos: aplicación web, React en frontend, PostgreSQL como base de
-datos y ejecución local para esta entrega. Código, interfaz y documentación
-pública en inglés; conversación de trabajo en español.
+- Responsive React form with validation, saving state, accessible feedback and copying.
+- Express API for link creation and redirection.
+- PostgreSQL persistence with versioned, transactional SQL migrations.
+- Unit, real-database integration, browser and process lifecycle checks.
+- Reproducible setup and GitHub CI.
 
-## Alcance
+Accounts, analytics, custom aliases, expiry, caching and AI are outside this release.
+There is no public link listing or hosted service. Publishing source code is separate
+from operating an internet-facing shortener.
 
-Una sola capacidad: crear y resolver enlaces cortos, de extremo a extremo.
+## Technology
 
-- Formulario adaptable a móvil y escritorio, con etiqueta visible, errores
-  accesibles, estado de envío, resultado y botón para copiar.
-- API para crear enlaces y resolver sus códigos.
-- Persistencia en PostgreSQL mediante una migración SQL versionada.
-- Pruebas de validación, persistencia, colisiones y recorrido en navegador.
-- Instrucciones reproducibles de ejecución y comprobación.
+Node.js 24, TypeScript, Express, React, Vite, PostgreSQL 17 and node-postgres.
+Vitest covers unit/integration behavior; Playwright covers Chromium. Docker Compose
+provides local databases. Exact package versions are recorded in package-lock.json.
 
-Cuentas, panel privado, analítica, alias personalizados, caducidad, caché e IA
-quedan fuera de esta primera entrega. No habrá un listado público de enlaces.
-Esta demo local no se presentará como un servicio público listo para producción.
+## Acceptance criteria
 
-## Stack propuesto
+| ID | Requirement |
+| --- | --- |
+| AC1 | POST /api/links accepts a JSON url and returns 201 with code, shortUrl and destinationUrl only after persistence. BASE_URL determines the short origin, independent of the request Host. |
+| AC2 | Accept absolute HTTP(S) destinations without credentials, up to 2,048 input characters after trimming. Reject invalid input with 400 and useful feedback. Never download the destination in the backend. |
+| AC3 | GET /r/:code returns an uncached 302 to the stored destination, preserving path, query and fragment through URL serialization. Invalid or missing codes return a readable 404. |
+| AC4 | Cryptographic codes have database-enforced uniqueness. Retry collisions at most three times without overwriting existing data. Exhaustion produces a controlled error. |
+| AC5 | Stored links remain valid across backend restarts. |
+| AC6 | Support keyboard operation, visible focus and accessible state/error announcements. Confirm copying only after success and offer manual copying on failure. |
+| AC7 | Database failures return generic errors without secrets or SQL details. Limit JSON request bodies to 8 KiB. |
+| AC8 | Verify creation, copying and browser redirection using an isolated local destination. |
 
-- Node.js 24 LTS y TypeScript con comprobación estricta.
-- Express 5 para la API; React y Vite para el frontend.
-- PostgreSQL y el cliente `pg`; consultas parametrizadas y migraciones SQL.
-- Vitest para pruebas unitarias y de integración; Playwright para el flujo web.
-- npm, un único repositorio y un único archivo de bloqueo de dependencias.
-- Docker Compose para la base de datos local.
+## Operational requirements
 
-Las versiones exactas restantes se fijarán en el archivo de bloqueo al implementar.
-Una aplicación backend sirve la API y los archivos frontend en producción;
-en desarrollo incorpora Vite como middleware, usando un solo puerto y origen.
+- Validate configuration before listening; exit unsuccessfully on invalid startup.
+- Log a generated request ID, route template, status, duration and aborted state.
+  Never log destinations, request bodies, authorization headers or raw query strings.
+- Stop accepting requests on SIGINT/SIGTERM, drain HTTP, close development resources
+  and end the pool. Bound shutdown to ten seconds; forced termination exits with code 1.
+- Keep development and test data separate; tests may delete only their own schemas.
+- Unknown API routes return JSON 404, never the frontend as a successful response.
 
-## Contrato y criterios de aceptación
+## Delivery criteria
 
-1. `POST /api/links` recibe `{ "url": "https://example.com/path?q=1#section" }`
-   y devuelve `201` con `code`, `shortUrl` y `destinationUrl` después de guardar
-   el enlace. La URL corta se construye con `BASE_URL`, nunca con el Host enviado
-   por el cliente.
-2. Se aceptan URLs absolutas HTTP/HTTPS, de hasta 2048 caracteres, sin credenciales.
-   Se rechazan entradas vacías, tipos incorrectos y protocolos como `javascript:`
-   con `400` y un error comprensible. El servidor no descarga el destino.
-3. `GET /r/:code` devuelve `302` con el destino guardado en `Location`, conservando
-   ruta, query y fragmento según la serialización del parser URL. Un código
-   inexistente devuelve `404` con una página comprensible.
-4. Los códigos se generan con aleatoriedad criptográfica y tienen una restricción
-   única en la base de datos. Una colisión provoca un reintento limitado; nunca
-   se sobrescribe otro enlace. Agotar los reintentos devuelve un error controlado.
-5. Los enlaces siguen funcionando tras reiniciar el backend.
-6. El formulario funciona con teclado; anuncia errores y resultados. Copiar
-   muestra confirmación únicamente si se completa y ofrece una alternativa si falla.
-7. Los fallos de base de datos no producen resultados exitosos ni filtran consultas,
-   credenciales o detalles internos. Se limita el tamaño del cuerpo JSON.
-8. El recorrido crear → copiar/abrir → redirigir se verifica en navegador con
-   un destino local controlado durante las pruebas.
+The README must explain configuration, local startup, API behavior, verification
+and limitations. CI must run static checks, migrations, unit/integration tests,
+browser checks and compiled-process lifecycle checks. Architecture decisions must
+record the chosen approach and its costs. Each acceptance criterion must have
+traceable evidence in the delivery checklist.
 
-## Estructura prevista
+## Constraints and limitations
 
-```text
-src/server/       API, configuración y acceso a datos
-src/client/       Interfaz React y estilos
-db/migrations/    Esquema SQL versionado
-tests/           Pruebas unitarias y de integración
-e2e/             Pruebas de navegador
-README.md        Instalación, decisiones, comprobaciones y limitaciones
-.env.example     Configuración de ejemplo sin secretos
-compose.yaml     PostgreSQL local
-```
+This is a local portfolio application, not a production service. Validation does
+not certify destinations as safe. Public hosting requires separate abuse controls,
+TLS, backup/recovery, readiness and capacity decisions. No throughput, screen-reader
+conformance or AI capability is claimed without corresponding verification.
 
-## Comandos previstos
-
-T02 añade desarrollo, build, arranque y pruebas a T01. T03 añade Compose y
-`npm run test:integration`. Copiar `.env.example` a `.env` antes de iniciar Compose.
-T04 añade `npm run db:migrate` y el esquema de enlaces. T10 añade `npm run test:e2e`.
-
-```sh
-npm ci
-docker compose up -d db
-docker compose --profile test up -d --wait
-npm run db:migrate
-npm run dev
-npm run typecheck
-npm run lint
-npm test
-npm run test:integration
-npx playwright install chromium
-npm run test:e2e
-npm run build
-npm start
-```
-
-El README explicará cómo crear `.env`, configurar `DATABASE_URL`, `BASE_URL` y
-una base independiente para integración, y ejecutar los comandos en orden.
-
-## Estilo de código
-
-Nombres de dominio explícitos, funciones pequeñas y validación en las fronteras.
-Sin `any` implícito ni abstracciones sin un uso concreto. Ejemplo de estilo:
-
-```ts
-type ShortLink = {
-  code: string;
-  destinationUrl: string;
-};
-
-function buildShortUrl(baseUrl: string, code: string): string {
-  return new URL(`/r/${code}`, baseUrl).href;
-}
-```
-
-## Verificación
-
-- Unitarias: protocolos, campos inválidos, límites y generación de URLs cortas.
-- Integración con PostgreSQL real y aislado: guardar/resolver, restricción única,
-  colisiones forzadas, inexistentes y errores de persistencia.
-- Navegador: envío, feedback, apertura y redirección; revisión de teclado y móvil.
-- Antes de cerrar la entrega: tipos, lint, pruebas y build deben pasar. Informar
-  expresamente cualquier comprobación que no se haya podido ejecutar.
-
-## Límites de trabajo
-
-- Siempre: validar entradas, parametrizar SQL, mantener secretos fuera de Git,
-  documentar decisiones y comprobar los comportamientos anteriores.
-- Consultar: cambios de alcance, servicios de pago o publicación externa.
-- Nunca: incorporar datos personales del CV al repositorio, afirmar resultados
-  de rendimiento sin medirlos o ignorar fallos para dar la entrega por terminada.
-
-## Entregas posteriores propuestas
-
-Tras validar el núcleo, definir cuentas y gestión privada; después analítica y
-despliegue público con controles de abuso. La posible función de IA deberá tener
-un objetivo útil, un conjunto de evaluación y límites de coste y acceso a datos.
-Su alcance todavía no está elegido.
-
-## Referencias técnicas
-
-- Node.js: https://nodejs.org/en/about/previous-releases
-- Express: https://expressjs.com/en/5x/starter/installing/
-- Vite: https://vite.dev/guide/
+See [Architecture decisions](docs/architecture.md), [Implementation plan](tasks/plan.md)
+and [README](README.md) for implementation details and commands.

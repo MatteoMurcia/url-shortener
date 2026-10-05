@@ -1,444 +1,85 @@
-# Tareas — primera entrega local
-
-Estado: T01–T11 y checkpoints A–E fusionados; T12 completado en su rama y CI verificado. Checkpoint F y smoke interactivo de cierre de T11 pendientes.
-Arquitectura y definición de terminado: [plan.md](plan.md).
-Los comandos de T01–T12 ya existen y se verificaron localmente y en CI.
-Los archivos indicados son estimaciones, no archivos ya creados. Si una tarea
-supera cinco archivos de implementación o una sesión enfocada, dividirla antes
-de ejecutarla. No se estiman horas sin conocer dedicación y restricciones.
-
-## T01 — Preparar herramientas
-
-Definir el paquete npm y las comprobaciones estáticas del proyecto.
-
-- [x] Aceptación: dependencias fijadas en lockfile; TypeScript estricto y lint configurados.
-- [x] Aceptación: scripts de esta entrega declarados y secretos/dependencias excluidos de Git.
-- Verificación: `npm ci`; `npm run typecheck`; `npm run lint` sobre la configuración inicial.
-- Dependencias: revisión del plan y petición explícita de iniciar implementación.
-- Archivos: `package.json`, `package-lock.json`, `tsconfig.json`, `eslint.config.js`, `.gitignore`.
-- Tamaño: M, 5 archivos.
-
-Resultado T01 (2026-10-01): `npm ci`, `npm run typecheck` y `npm run lint`
-completados con éxito. `git check-ignore` confirma exclusión de `.env`, variantes,
-`.npmrc`, claves, `node_modules` y `dist`, y permite `.env.example`. Se comprueba
-la configuración ESLint con TypeScript (`allowJs` + `checkJs`) mientras aún no
-hay fuentes de aplicación. Se fijó TypeScript 6.0.3 por compatibilidad con
-typescript-eslint 8.71.0. No hay build ni tests de aplicación en esta tarea.
-
-Ampliación autorizada: inicializar Git y conectar GitHub. Incluye README inicial
-y actualización del estado de estos documentos; no implementa T02. Los scripts
-de desarrollo, build y pruebas se introducirán con sus tareas para evitar
-comandos que aparenten funcionar sin implementación.
-
-## T02 — Ejecutar la aplicación mínima
-
-Poner en marcha una página React servida junto a un backend Express mínimo.
-
-- [x] Aceptación: desarrollo muestra una página y un endpoint de salud responde 200.
-- [x] Aceptación: build local arranca y sirve la página; configuración básica de entorno validada.
-- Verificación: `npm run dev`; `npm run build`; `npm start`; abrir la página y `/api/health`.
-- Dependencias: T01.
-- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/client/main.tsx`, `src/client/App.tsx`, `index.html`.
-- Tamaño: M, 5 archivos. Si scripts necesitan ajustes, separarlos de esta tarea.
-
-Desglose de T02 acordado con su implementación:
-- T02a: dependencias, scripts y configuración TypeScript (4 archivos).
-- T02b: backend, configuración de entorno y pruebas HTTP/configuración (5 archivos).
-- T02c: página React, estilos, entrada HTML y tipos de recursos (5 archivos).
-- Documentación y evidencias se actualizan al verificar el conjunto.
-
-Ajuste técnico: Express incorpora Vite como middleware en desarrollo, compartiendo
-puerto con la API; no se necesita proxy en T03. Vitest se introduce ahora para
-probar el contrato de salud y la validación de entorno. En T03 se ampliará para
-las pruebas con PostgreSQL. La interfaz inicial será una página de presentación
-accesible, con colores neutros y acento verde, sin simular creación de enlaces.
-
-Verificación T02 (2026-10-01): 13 pruebas Vitest pasan. `npm run build` incluye
-comprobación de tipos; `npm run lint` pasa. Se comprobaron HTTP 200 para `/` y
-`/api/health`, y JSON 404 para `/api/missing`, tanto en desarrollo (3000) como
-en producción local (3001). Navegador real: React visible en ambos modos, consola
-sin errores ni advertencias, sin desbordamiento horizontal a 320/768/1024/1440 px
-y navegación mediante teclado. No hay persistencia ni acortamiento todavía.
-
-### Checkpoint A — Base ejecutable
-
-- [x] Tipos, lint y build pasan; arranque comprobado en desarrollo y build local.
-- [x] Revisar con Matteo la estructura antes de incorporar persistencia. PR #1 fusionada por Matteo; autorizado continuar con T03.
-
-## T03 — Preparar datos y entorno de pruebas
-
-Conectar PostgreSQL local y ampliar la configuración de pruebas para persistencia.
-
-Desglose: T03a configura Compose y entorno; T03b añade pool y pruebas de conexión
-con base aislada; T03c separa proyectos Vitest y actualiza scripts/configuración.
-Cada parte mantiene un alcance de hasta cinco archivos de implementación.
-Dos instancias PostgreSQL locales separan desarrollo (volumen persistente) de
-pruebas (almacenamiento temporal); no se implementa aún el esquema de enlaces.
-
-- [x] Aceptación: Compose inicia PostgreSQL con comprobación de salud y volumen persistente.
-- [x] Aceptación: configuración de ejemplo distingue base de desarrollo y de pruebas.
-- [x] Aceptación: pool de conexiones funciona; el runner existente distingue pruebas unitarias y de integración.
-- Verificación: `docker compose up -d db`; `docker compose ps`; probar conexión y aislamiento; `npm run build`.
-- Dependencias: T02.
-- Archivos: `compose.yaml`, `.env.example`, `src/server/db.ts`, `package.json`, `vitest.config.ts`.
-- Tamaño: M, 5 archivos.
-
-Evidencia T03 (2026-10-01): 26 pruebas sin PostgreSQL y 2 de integración pasan;
-lint y build (incluido typecheck) pasan. Ambos contenedores están saludables.
-La identidad del clúster de desarrollo se mantiene tras reemplazar el contenedor,
-demostrando reutilización del volumen. Las pruebas verifican bases distintas,
-consultas parametrizadas y rollback sin tablas persistentes. `.env` es local e
-ignorado; el pool se conectará a las rutas al implementar enlaces.
-
-## T04 — Crear el esquema reproducible
-
-Versionar el esquema de enlaces y comprobar su instalación en una base vacía.
-
-- [x] Aceptación: migración crea las columnas de `links` y la clave única especificadas.
-- [x] Aceptación: historial evita reaplicar migraciones; fallo revierte la transacción.
-- [x] Aceptación: preparación de pruebas rechaza limpiar la base de desarrollo.
-- Verificación: `npm run db:migrate` dos veces; `npm run test:integration -- tests/migrations.integration.test.ts`.
-- Dependencias: T03.
-- Archivos: `db/migrations/001_links.sql`, `scripts/migrate.ts`, `tests/database.ts`, `tests/migrations.integration.test.ts`.
-- Tamaño: M, 4 archivos.
-
-T04 se entregó en pasos separados: esquema y helper aislado; ejecutor y CLI;
-pruebas de rollback; documentación. PR #2 confirmada como fusionada antes de
-crear la rama. Evidencia (2026-10-02): 27 pruebas sin PostgreSQL y 7 de integración
-pasan; lint y build (con typecheck) pasan. `npm run db:migrate` aplicó
-`001_links.sql` en `url_shortener` local y una segunda ejecución no hizo cambios.
-Pruebas reales verifican restricciones, concurrencia, rollback desde una base
-vacía y preservación de datos/historial ya existentes. La limpieza solo elimina
-el esquema generado por cada prueba dentro de `url_shortener_test`.
-
-### Checkpoint B — Persistencia preparada
-
-- [x] Base vacía reproducible, migración repetible y aislamiento de pruebas comprobados.
-- [x] Revisar modelo y contrato HTTP con Matteo antes de conectar el flujo principal: PR #3 fusionada; Matteo autorizó T05.
-
-## T05 — Crear un enlace desde la interfaz
-
-Implementar una entrega vertical: formulario, API, generación de código e inserción.
-
-- [x] Aceptación: URL válida genera 201 con código, destino y enlace basado en `BASE_URL`.
-- [x] Aceptación: el formulario muestra resultado solo después de persistir y evita envíos repetidos mientras espera.
-- [x] Aceptación: generación criptográfica e inserción respetan el contrato; el error básico no filtra detalles internos.
-- Verificación: `npm run test:integration -- tests/create-link.integration.test.ts`; crear un enlace desde la página y comprobar la fila guardada.
-- Dependencias: T04.
-- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/server/db.ts`, `src/client/App.tsx`, `tests/create-link.integration.test.ts`.
-- Tamaño: M, 5 archivos.
-
-Desglose T05: servicio de creación y pruebas; configuración `BASE_URL`;
-conexión de la API al pool y prueba HTTP; formulario React; documentación.
-Cada paso se registra en un commit separado. Se incorporó la validación básica
-necesaria para guardar datos seguros; T07 ampliará los casos y T08 comprobará
-colisiones forzadas y concurrencia. No se añadieron dependencias.
-
-Evidencia (2026-10-02): 44 pruebas unitarias y 9 de integración pasan, junto a
-lint y build (incluye typecheck). La prueba HTTP verifica 201 después de guardar,
-origen independiente de Host y 503 sin detalles de SQL. Smoke del build local:
-página 200, creación 201, fila persistida, origen configurado, JSON mal formado
-400 y cuerpo grande 413. Se eliminó solo la fila creada por ese smoke.
-
-Verificación de navegador completada (2026-10-02): con un bloqueo temporal de
-inserción en PostgreSQL, el formulario mostró Saving, deshabilitó campo/botón y
-no mostró resultado. Tras otro clic y Enter, se comprobó exactamente una
-inserción esperando y cero filas guardadas. Al liberar el bloqueo apareció el
-enlace; su código m0HZ0VzI2-xd coincidió con la única fila del destino de prueba.
-También se comprobó error FTP sin falso éxito, entrada conservada, envío con
-Tab/Enter y presentación a 375 px sin desbordamiento horizontal. No hubo errores
-nuevos de consola al recargar; permanecían dos errores antiguos de Vite de la
-página anterior. No se modificó código ni se dejaron bloqueos activos.
-La evidencia de T05 se entregó en PR #5. La redirección se incorpora en T06.
-
-## T06 — Abrir el enlace corto
-
-Resolver un código y redirigir a la URL persistida sin descargarla en el backend.
-
-- [x] Aceptación: enlace existente responde 302 con destino completo y `Cache-Control: no-store`.
-- [x] Aceptación: código inválido o inexistente muestra 404; fallos de base de datos no se confunden con inexistentes.
-- [x] Aceptación: reiniciar el backend conserva el funcionamiento de enlaces ya creados.
-- Verificación: `npm run test:integration -- tests/redirect.integration.test.ts`; crear, abrir, reiniciar y volver a abrir un enlace.
-- Dependencias: T05.
-- Archivos: `src/server/app.ts`, `src/server/db.ts`, `tests/redirect.integration.test.ts`.
-- Tamaño: M, 3 archivos.
-
-Evidencia T06 (2026-10-02): prueba de integración primero falló con 404 en lugar
-de 302 y después pasó. Se verifican Location completo, no-store, 404 por código
-inválido/ausente y 503 genérico ante fallo de consulta. Dos instancias sucesivas
-del servidor reutilizan los datos. Smoke del proceso compilado: crear, seguir
-redirección a un destino local, terminar el proceso, arrancar otro y abrir el
-mismo código con éxito. 44 pruebas unitarias y 10 de integración pasan; build y
-lint pasan. Un worker de integración avisó de cierre lento; su archivo aislado
-se repitió sin advertencia. Sin nuevas dependencias.
-
-La limitación de navegación inicial se resolvió en el checkpoint C usando un
-destino HTML local controlado. PR #6 fusionada en la rama de documentación;
-la PR del checkpoint lleva T06 y esta evidencia a main.
-
-### Checkpoint C — Primer recorrido funcional
-
-- [x] Crear y abrir un enlace funciona de extremo a extremo y tras reinicio.
-- [x] Demostrar el recorrido a Matteo; revisar decisiones antes de ampliar casos.
-
-Evidencia del checkpoint (2026-10-03): se creó desde el formulario el código
-`xGcmNW162GUA`, con destino HTML local
-`http://127.0.0.1:3002/checkpoint-c?source=short-link#verified`. Al pulsar
-Open short link el navegador mostró Destino de prueba alcanzado, conservando
-query y fragmento. Se detuvieron el proceso Node del backend y su watcher, se
-arrancó de nuevo con npm run dev y se abrió el mismo enlace: volvió a mostrar
-el destino correcto. No se recreó el enlace ni la base de datos. La captura
-del resultado se presentó a Matteo en el chat.
-
-Revisión de decisiones: mantener monolito, PostgreSQL como fuente de verdad,
-302 con no-store y resolución sin descargar el destino. No se necesitan caché,
-colas ni servicios nuevos para este recorrido. Esta revisión no implica aprobar
-T07 ni completar las pruebas E2E automatizadas previstas en T10. El destino
-del puerto 3002 es un servidor temporal de demostración, no parte del producto.
-
-## T07 — Rechazar entradas inválidas con feedback útil
-
-Completar la validación del contrato y presentar errores comprensibles en la UI.
-
-- [x] Aceptación: cubrir tipos incorrectos, JSON mal formado, vacío, longitud, credenciales y protocolos no permitidos.
-- [x] Aceptación: cuerpos mayores del límite reciben 413; errores esperados usan el formato acordado.
-- [x] Aceptación: el formulario conserva la entrada y anuncia el error sin fingir éxito.
-- Verificación: `npm test -- tests/validation.test.ts`; `npm run test:integration -- tests/create-link.integration.test.ts`; revisión manual de errores.
-- Dependencias: T06.
-- Archivos: `src/server/links.ts`, `src/server/app.ts`, `src/client/App.tsx`, `tests/validation.test.ts`, `tests/create-link.integration.test.ts`.
-- Tamaño: M, 5 archivos.
-
-Evidencia T07 (2026-10-03): la implementación básica de T05 ya satisface el
-contrato; se amplió su cobertura sin modificar código de aplicación ni añadir
-dependencias. Se renombró links.test.ts a validation.test.ts y se cubrieron
-20 casos unitarios, incluido el límite exacto de 2048 caracteres tras trim.
-La prueba HTTP comprueba 21 cuerpos inválidos: tipos, vacío, formato, credenciales,
-protocolos, longitud y límite de 8 KiB con ASCII y UTF-8 multibyte. Verifica
-status, Content-Type, formato exacto del error y cero filas insertadas.
-
-Navegador real: después de crear un enlace, una URL con credenciales elimina el
-resultado previo, conserva el texto y muestra role=alert con aria-invalid=true.
-Vacío activa validación nativa; FTP recibe feedback del servidor. Corregir la
-URL limpia el error y permite crear de nuevo. Se inspeccionaron los atributos
-accesibles; no se afirma una prueba con lector de pantalla. 54 pruebas unitarias,
-11 de integración, build (incluye typecheck) y lint pasan.
-
-## T08 — Comprobar colisiones y fallos de persistencia
-
-Probar los riesgos que el flujo normal difícilmente reproduce.
-
-- [x] Aceptación: colisión forzada reintenta hasta el límite sin sobrescribir el enlace anterior.
-- [x] Aceptación: agotamiento de intentos o base indisponible produce 503 sin filtrar detalles.
-- [x] Aceptación: creaciones concurrentes conservan asociaciones correctas entre códigos y destinos.
-- Verificación: `npm run test:integration -- tests/link-resilience.integration.test.ts`; pruebas con PostgreSQL real y generador controlado para provocar colisiones.
-- Dependencias: T07.
-- Archivos: `src/server/links.ts`, `src/server/db.ts`, `tests/link-resilience.integration.test.ts`.
-- Tamaño: M, 3 archivos.
-
-Evidencia T08 (2026-10-03): cuatro pruebas con PostgreSQL real en esquemas
-aislados. Generador controlado únicamente en el archivo de pruebas, sin cambios
-de producción. Dos colisiones seguidas permiten éxito en el tercer intento;
-tres colisiones producen exactamente tres intentos y HTTP 503 genérico, sin
-sobrescribir la fila original. Una conexión real cerrada produce el mismo 503
-sin detalles internos y sin reintentos de consulta.
-
-Concurrencia: cuatro conexiones independientes comparten esquema y código
-inicial; una gana y las otras tres reintentan con códigos distintos controlados.
-Se comprueban cuatro asociaciones código/destino exactas y siete intentos totales.
-Se espera a todas las operaciones antes de limpiar incluso si alguna falla.
-54 pruebas unitarias, 15 de integración, build/typecheck y lint pasan. Sin
-cambios de UI, nuevas dependencias ni cambios en la base de desarrollo. El
-checkpoint D se revisó a continuación.
-
-### Checkpoint D — Contrato resistente a errores
-
-- [x] Integración y regresiones pasan; revisar evidencia de concurrencia y errores.
-- [x] Comprobar con Matteo que la complejidad añadida responde a casos verificables.
-
-Revisión del checkpoint D (2026-10-03), sobre main con PR #9 fusionada:
-54 pruebas unitarias y 15 de integración, build/typecheck y lint pasan. Se
-revisaron validación antes de insertar, consultas parametrizadas, unicidad de
-PostgreSQL, tres intentos acotados, respuestas 400/413/503 y limpieza de esquemas.
-No se identificaron bloqueos para este hito local.
-
-Prueba de sensibilidad: se cambió temporalmente el límite de tres intentos a
-dos. Fallaron las dos pruebas esperadas (éxito en tercer intento y agotamiento).
-Se restauró el archivo byte a byte; git confirmó ausencia de cambios en
-producción y las cuatro pruebas de resiliencia volvieron a pasar.
-
-Revisión compartida con Matteo: T07/T08 añadieron pruebas y documentación, sin
-cambiar producción ni dependencias. El generador controlado permite reproducir
-colisiones; las cuatro conexiones prueban asociaciones concurrentes; el helper
-HTTP comprueba el contrato 503; los esquemas aislados protegen los datos locales.
-No se necesitan caché, cola ni capa de reintentos adicional. Límites de evidencia:
-cuatro conexiones no equivalen a una prueba de carga; conexión cerrada no prueba
-recuperación del clúster; no se declara el proyecto listo para producción.
-T09–T12 mantienen su alcance pendiente.
-
-## T09 — Completar copia y accesibilidad
-
-Hacer utilizable la experiencia en móvil y mediante teclado.
-
-- [x] Aceptación: botón de copia confirma éxito solo si Clipboard funciona; alternativa manual visible si falla.
-- [x] Aceptación: etiquetas, foco visible y anuncios accesibles para estados y errores.
-- [x] Aceptación: URLs largas no rompen el diseño en móvil o escritorio.
-- Verificación: recorrido manual con teclado y anchuras de 360 y 1280 píxeles; probar copia disponible y denegada; `npm run build`.
-- Dependencias: T08.
-- Archivos: `src/client/App.tsx`, `src/client/styles.css`, `src/client/main.tsx`.
-- Tamaño: M, 3 archivos.
-
-Evidencia T09 (2026-10-04): CopyLink encapsula el resultado y reinicia el estado
-de copia cuando cambia el enlace. writeText se espera antes de confirmar; al
-fallar o no estar disponible, muestra instrucciones y enfoca/selecciona el campo
-de solo lectura. No utiliza execCommand ni dependencias adicionales. El estado
-se anuncia con role=status y la ayuda se asocia mediante aria-describedby.
-
-Dos pruebas unitarias verifican espera real, éxito, denegación y API ausente.
-Navegador: copia normal comprobada leyendo el enlace exacto del portapapeles;
-build servido temporalmente con Permissions-Policy clipboard-write=() para
-verificar fallo, selección completa y copia manual mediante Ctrl+C. También se
-comprobó copia mediante Tab/Enter y foco visible de 3 px. URL de 1919 caracteres
-a 360 y 1280 px: sin desbordamiento horizontal, capturas revisadas. Se conserva
-el CSS existente porque ya cubre estos casos. No se afirma una auditoría con
-lector de pantalla. 56 pruebas unitarias, 15 de integración, build/typecheck y
-lint pasan. La revisión visual se realizó en el build de pruebas; la pestaña
-antigua de desarrollo quedó suspendida por el navegador.
-
-## T10 — Automatizar el recorrido web
-
-Verificar la aplicación completa desde el navegador usando un destino controlado.
-
-- [x] Aceptación: prueba crea el enlace y sigue la redirección hasta un servidor local de prueba.
-- [x] Aceptación: pruebas cubren error de validación, 404 y copia exitosa/fallida.
-- [x] Aceptación: pruebas utilizan datos aislados y no dependen de sitios externos.
-- Verificación: `npx playwright install chromium`; `npm run test:e2e`; inspeccionar resultados y trazas solo si hay fallos.
-- Dependencias: T09.
-- Archivos: `playwright.config.ts`, `e2e/links.spec.ts`, `e2e/fixtures.ts`, scripts/dependencias y cobertura de tipos.
-- Tamaño: M, 4 archivos.
-
-Desglose T10: configuración y fixture aislada (cinco archivos); cuatro casos
-de navegador; revisión del caso de permisos; documentación. Se reutiliza
-withTestSchema y se agrupan ambos servidores en una única fixture con limpieza
-en finally. Cada prueba tiene esquema y puertos efímeros propios. El frontend
-compilado usa Express y PostgreSQL reales; no se simulan respuestas de la API.
-Solo se intercepta el HTML del caso denegado para añadir Permissions-Policy.
-
-Evidencia T10 (2026-10-04): cuatro pruebas Chromium pasan; creación y navegación
-conservan query y fragmento, la copia se verifica leyendo el portapapeles, FTP
-muestra error y retiene la entrada, código ausente responde 404 y copia denegada
-selecciona el enlace completo. La revisión de sensibilidad detectó que faltaba
-conceder el permiso general en el caso denegado; se corrigió para aislar el efecto
-de la política HTTP. Al permitir temporalmente clipboard-write, esa prueba falló
-como se esperaba; se restauró el archivo y pasó el recorrido completo. Pasan
-56 pruebas unitarias, 15 de integración, 4 E2E, lint y build con typecheck.
-No se automatiza aún Firefox/WebKit ni el arranque de main.
-La descarga con el instalador agotó el tiempo de espera; se descargó el mismo
-Chromium Headless Shell oficial con curl a la caché local. No cambia el comando
-de instalación del proyecto ni se versionan binarios o resultados.
-
-### Checkpoint E — Experiencia comprobada
-
-- [x] Flujo web automatizado pasa; revisión móvil y teclado completada.
-- [x] Revisar con Matteo el resultado y las limitaciones antes de preparar entrega local.
-
-Revisión del checkpoint E (2026-10-04), sobre main con PR #12 fusionada
-(`ceafd2a`): `npm run test:e2e` vuelve a pasar las cuatro pruebas Chromium y
-el build con typecheck. Se revisan creación persistida, redirección al destino
-local con query/fragmento, validación, 404 y copia exitosa/denegada.
-
-La evidencia móvil y de teclado procede de T09, realizada el mismo día:
-anchuras 360/1280 px, URL de 1919 caracteres, Tab/Enter, foco visible y alternativa
-manual. Se volvió a inspeccionar la captura móvil; no se repitió esa interacción.
-Git confirma que T10 no modificó src/client ni src/server, por lo que esa revisión
-corresponde también al código actual. T10 añade la regresión automatizada.
-
-Resultado y límites compartidos con Matteo: el núcleo crear/copiar/abrir está
-comprobado para la demo local. Automatización solo en Chromium; sin auditoría
-con lector de pantalla ni afirmaciones de carga o preparación para producción.
-El repositorio ya es público, pero el servicio no está desplegado. La IA sigue
-fuera del núcleo y pendiente de definir. T11 completará logs y cierre ordenado;
-T12 completará documentación de entrega y CI. Este checkpoint no implementa ni
-da por terminadas esas tareas. Sin cambios de producto ni nuevas dependencias.
-
-## T11 — Completar operación local
-
-Añadir señales mínimas para diagnosticar fallos y terminar el proceso limpiamente.
-
-- [x] Aceptación: petición produce log con identificador, estado y duración sin destinos completos ni secretos.
-- [x] Aceptación: configuración inválida impide arrancar con error comprensible; cierre de servidor y pool comprobado por integración. Señales conectadas en main; smoke interactivo pendiente.
-- [x] Aceptación: rutas desconocidas de API no devuelven la página frontend como respuesta exitosa.
-- Verificación: `npm run test:integration -- tests/operations.integration.test.ts`; `npm run build`; `npm start`; comprobar cierre y logs.
-- Dependencias: T10.
-- Archivos: `src/server/main.ts`, `src/server/app.ts`, `src/server/shutdown.ts`, `tests/operations.integration.test.ts`.
-- Tamaño: M, 4 archivos.
-
-Evidencia T11 (2026-10-04): logs JSON con UUID propio devuelto en X-Request-ID,
-método, plantilla de ruta, estado, duración y marca de respuesta abortada. No se
-registra la URL original: rutas desconocidas/estáticos usan unmatched. Pruebas
-comprueban ausencia de valores sensibles en body, headers, query, path y código.
-El 404 de API se verifica incluso con un fallback HTML montado después.
-
-El cierre espera peticiones activas antes de terminar el pool; una consulta real
-en PostgreSQL finaliza y devuelve 200 durante el drenaje. Configuración inválida
-termina procesos hijos con código 1 sin revelar la entrada. main conecta SIGINT
-y SIGTERM, evita limpieza duplicada y limita todo el cierre a 10 segundos.
-Sin nuevas dependencias ni cambios en datos de desarrollo.
-
-Pasan 56 pruebas unitarias, 19 de integración, 4 E2E, build/typecheck y lint.
-Una ejecución completa tuvo un timeout en cierre; el caso aislado y la suite
-completa posterior pasaron sin cambios de timeout. No se determinó su causa.
-La mutación temporal de aborted produjo el fallo esperado; restaurado el archivo,
-las cuatro pruebas de operación pasan. La revisión automática de permisos rechazó
-arrancar npm start en terminal interactiva sin explicar más que «blocked by policy».
-Por ello no se afirma haber probado Ctrl+C real ni el límite forzado de 10 segundos.
-Queda esa comprobación manual pendiente; la evidencia de cierre es de integración.
-
-## T12 — Preparar una entrega reproducible
-
-Documentar el proyecto y ejecutar CI en el repositorio ya publicado en GitHub.
-
-- [x] Aceptación: README explica arranque desde cero, configuración, pruebas, API y limitaciones de la demo local.
-- [x] Aceptación: decisiones documentan códigos aleatorios, 302, PostgreSQL y ausencia de caché con sus compromisos.
-- [x] Aceptación: workflow configura PostgreSQL de pruebas y ejecuta tipos, lint, pruebas y build; primera ejecución remota completada con éxito.
-- Verificación: seguir README desde un entorno limpio; ejecutar `npm run typecheck`, `npm run lint`, `npm test`, `npm run test:integration`, `npm run test:e2e`, `npm run build`; revisar workflow sin afirmar que corrió en GitHub.
-- Dependencias: T11.
-- Archivos: `README.md`, `docs/architecture.md`, `.github/workflows/ci.yml`, `.env.example`.
-- Tamaño: M, 4 archivos.
-
-Evidencia T12 (2026-10-04): clon nuevo, npm ci y .env creado desde el ejemplo;
-Compose saludable; migraciones repetidas sin cambios; 56 pruebas unitarias,
-19 de integración, 4 E2E, tipos, lint y build pasan. La verificación local reutilizó
-las bases Compose existentes y Chromium de la caché, sin borrar datos. El archivo
-.env.example ya era suficiente y se conserva. El clon permanece en tmp/t12-clean
-(ignorado): la política de ejecución rechazó su limpieza recursiva.
-
-La ejecución remota [37220391925](https://github.com/MatteoMurcia/url-shortener/actions/runs/37220391925)
-pasó en Ubuntu 24.04 con Node 24, dependencias del lockfile, PostgreSQL 17 nuevo,
-migración inicial/repetida y Chromium instalado por el runner. CI utiliza Compose,
-contraseñas efímeras generadas por job, permisos de lectura y acciones fijadas por
-SHA; conserva solo resultados de navegador fallidos durante siete días. Sin deploy.
-
-README reúne la secuencia completa y docs/architecture.md documenta las decisiones
-implementadas y sus costes. Se mantienen los límites de Chromium, accesibilidad
-manual, carga no medida, IA sin definir y servicio no desplegado. El smoke de
-Ctrl+C de T11 no se ha vuelto a ejecutar ni se declara resuelto. Checkpoint F
-requiere una revisión separada; T12 no activa protección de rama automáticamente.
-
-### Checkpoint F — Primera entrega local terminada
-
-- [ ] Todos los criterios de SPEC.md están vinculados a evidencia y comprobaciones satisfactorias.
-- [ ] Matteo puede ejecutar y explicar el proyecto; limitaciones y pendientes quedan documentados.
-- [ ] Distinguir entrega local, repositorio publicado y servicio sin despliegue público.
-
-## Trazabilidad de la especificación
-
-| Criterio de SPEC.md | Tareas que lo implementarán y comprobarán |
-|---|---|
-| 1: creación persistente y origen configurado | T05, T10 |
-| 2: validación de URLs | T07, T10 |
-| 3: redirección y 404 | T06, T10 |
-| 4: generación y colisiones | T05, T08 |
-| 5: persistencia tras reinicio | T03, T04, T06 |
-| 6: accesibilidad y copia | T09, T10 |
-| 7: errores de persistencia y tamaño JSON | T07, T08, T11 |
-| 8: recorrido web controlado | T10 |
+# Delivery checklist
+
+Status: T01–T12 implemented and merged. Checkpoint F completed on the final review branch.
+Scope: a locally runnable full-stack portfolio application; no public service deployment.
+Requirements: [SPEC.md](../SPEC.md). Sequence: [Implementation plan](plan.md).
+
+## Implementation tasks
+
+- [x] T01 — Strict TypeScript, lint, pinned dependencies and verification scripts.
+- [x] T02 — React and Express on one origin; development and compiled asset serving.
+- [x] T03 — PostgreSQL Compose services with separate development/test storage.
+- [x] T04 — Versioned migrations, unique link codes, rollback and schema isolation.
+- [x] T05 — Form submission persists before success and prevents duplicate pending submissions.
+- [x] T06 — Uncached 302 redirects, readable 404 and controlled database failures.
+- [x] T07 — URL/body validation and accessible error feedback.
+- [x] T08 — Forced collisions, bounded retries and concurrent connection checks.
+- [x] T09 — Clipboard success/manual fallback, keyboard and responsive presentation.
+- [x] T10 — Isolated browser creation, copying and local destination navigation.
+- [x] T11 — Private request logs, startup validation and bounded resource cleanup.
+- [x] T12 — Setup documentation, architecture decisions and GitHub CI.
+
+## Checkpoints
+
+- [x] A — Runtime: development/compiled serving, API health and frontend rendering verified.
+- [x] B — Data: empty-schema setup, repeatable migrations and guarded test cleanup verified.
+- [x] C — Flow: browser creation and destination navigation verified, including backend restart.
+- [x] D — Resilience: collision/concurrency behavior reviewed; changing the retry limit makes the expected tests fail.
+- [x] E — Experience: browser suite passes; mobile, keyboard and copy fallback reviewed.
+- [x] F — Final delivery: acceptance traceability, lifecycle verification and portfolio documentation completed.
+
+## Checkpoint F acceptance
+
+- [x] Every product acceptance criterion is linked to evidence in the table below.
+- [x] Cleanup waits for HTTP even if development shutdown throws or rejects.
+- [x] The compiled process handles real SIGINT/SIGTERM and its forced shutdown deadline in Linux CI.
+- [x] Setup instructions, architecture rationale and a product screenshot support review and demonstration.
+- [x] Documentation is consistent, in English, and distinguishes source publication from public hosting.
+
+## Acceptance traceability
+
+| Criterion | Evidence |
+| --- | --- |
+| AC1: persistent creation and configured origin | tests/create-link.integration.test.ts; e2e/links.spec.ts |
+| AC2: destination validation | tests/validation.test.ts; tests/create-link.integration.test.ts; browser validation scenario |
+| AC3: redirects and missing codes | tests/redirect.integration.test.ts; browser local-destination and 404 scenarios |
+| AC4: randomness, uniqueness and collisions | tests/schema.integration.test.ts; tests/link-resilience.integration.test.ts |
+| AC5: persistence across restart | Redirect integration across server instances; compiled-process/browser restart check recorded at checkpoint C |
+| AC6: keyboard, announcements and copying | tests/clipboard.test.ts; browser copy scenarios; manual viewport/keyboard review |
+| AC7: controlled failures and body limits | Creation/resilience integration tests; request-log privacy assertions |
+| AC8: controlled end-to-end flow | e2e/links.spec.ts and guarded local-server fixtures |
+
+## Verification record
+
+- 2026-10-03: the browser created a link to a controlled local HTML server and
+  reopened it after restarting the backend. Query and fragment were preserved.
+- 2026-10-04: manual keyboard review covered Tab/Enter, visible focus and copying.
+  A 1,919-character destination was checked at 360 and 1,280 pixels without horizontal
+  overflow. Clipboard denial selected the full result for manual copying. This was
+  not a screen-reader audit.
+- 2026-10-04: a fresh checkout passed installation, static checks, 56 unit tests,
+  19 integration tests and four Chromium scenarios. Local verification reused
+  Compose databases/browser cache; GitHub CI used fresh databases and installed Chromium.
+- Main CI after T12: [successful run](https://github.com/MatteoMurcia/url-shortener/actions/runs/37220906573).
+- 2026-10-05: cleanup regression tests failed before the fix for synchronous and
+  asynchronous development-cleanup failures, then passed after the fix.
+- 2026-10-05: [final lifecycle verification](https://github.com/MatteoMurcia/url-shortener/actions/runs/37281808045)
+  passed on Linux: 58 unit tests, 19 integration tests, four browser scenarios,
+  typecheck, lint, build, and three compiled-process checks (SIGINT, SIGTERM,
+  unfinished-request timeout). Both normal signals exited with code 0; the real
+  ten-second deadline exited with code 1. A new desktop screenshot was captured
+  from the verified browser flow and inspected.
+
+## Verification boundaries
+
+Chromium is the only automated browser. Process signal/deadline checks target Linux;
+Windows process-kill semantics differ. No load-test or screen-reader conformance claim
+is made. A prior local shutdown test timed out once; isolated and subsequent complete
+runs passed without increasing timeouts. The cause was not established.
+One local unit run also failed to start several workers; the unchanged full rerun
+and clean Linux CI passed. These observations are not hidden by retries or skipped tests.
+
+The repository was verified as private on 2026-10-05. Changing GitHub visibility is
+separate from completing this release. No public service is deployed and no LICENSE
+file is included. The interface does not claim open-source licensing. No AI capability
+is implemented.

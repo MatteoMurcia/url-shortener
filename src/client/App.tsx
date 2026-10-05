@@ -33,7 +33,7 @@ export function App() {
 
       <footer className="footer">
         <span>Small links. Thoughtfully built.</span>
-        <span>An open-source project by Matteo Murcia</span>
+        <span>A full-stack engineering portfolio project</span>
       </footer>
     </div>
   );

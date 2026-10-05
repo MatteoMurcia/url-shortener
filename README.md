@@ -6,7 +6,7 @@ to their destinations, with an accessible web interface and verifiable behavior.
 
 ## Current status
 
-**T12: reproducible local checks, architecture decisions and GitHub CI.** The React form submits destinations to Express,
+**Local portfolio release.** The React form submits destinations to Express,
 which validates them and stores a random short code in PostgreSQL before returning
 the result. Development and test databases run through Compose.
 
@@ -14,6 +14,18 @@ The form has been verified in a real browser, including a delayed database inser
 repeat submission attempts, error feedback, keyboard submission and mobile layout.
 Saved links now open their persisted destination through an uncached 302 response. There is no public deployment. The AI feature is still
 being defined; no AI capability is implemented or claimed at this stage.
+
+![Desktop preview of the link creation and copy flow](docs/images/preview.png)
+
+## Engineering focus
+
+- Keep a single deployable application with explicit HTTP, domain and database responsibilities.
+- Let PostgreSQL enforce uniqueness under concurrent creation; retry only collisions.
+- Verify failures as well as successful flows with real databases and controlled browser destinations.
+- Treat accessible feedback, private logs and bounded shutdown as part of the feature.
+- Document tradeoffs and defer caching, queues and additional services until justified.
+
+See [architecture decisions](docs/architecture.md) for the reasoning and limits.
 
 ## Prerequisites
 
@@ -180,9 +192,13 @@ if cleanup stalls; requests still running at that deadline can be interrupted.
 Use Ctrl+C in the terminal running the server. On Windows, killing a process with
 SIGTERM through another process forcibly terminates it; this is not evidence of
 graceful cleanup ([Node signal documentation](https://nodejs.org/docs/latest-v24.x/api/process.html#signal-events)).
-T11 integration tests verify HTTP draining with an active PostgreSQL query, pool
-closure, private logs, JSON API 404s and invalid-config process exits. The interactive
-`npm start`/Ctrl+C smoke check was blocked by the execution policy and remains unverified.
+Integration tests verify HTTP draining with an active PostgreSQL query, pool closure,
+private logs, JSON API 404s and invalid-config process exits. Unit regressions ensure
+that failed development cleanup cannot close the pool before HTTP has drained.
+On Linux, after building and configuring the test database, `npm run test:process`
+starts the compiled application and checks real SIGINT/SIGTERM handling and the
+ten-second deadline with an unfinished HTTP request. CI runs this check automatically.
+This is not a claim that interactive Windows Ctrl+C has been tested.
 
 ## Local PostgreSQL
 
@@ -218,7 +234,7 @@ times out connection acquisition after five seconds, and logs idle connection
 failures without credentials. Consumers must call `pool.end()` when done. Use
 parameterized queries; transactions must use one checked-out client.
 
-`npm test` runs 56 tests that need no PostgreSQL. `npm run test:integration`
+`npm test` runs 58 tests that need no PostgreSQL. `npm run test:integration`
 runs nineteen integration tests, including real-database schema constraints, migration history,
 concurrent runners, rollback HTTP link creation, rejected request bodies with no inserted rows, and redirection
 across server instances, forced collisions, closed connections and concurrent
@@ -324,8 +340,8 @@ the application is client-rendered and does not implement SSR.
 - [Architecture and implementation plan](tasks/plan.md)
 - [Task checklist and verification steps](tasks/todo.md)
 
-Planning documents are currently in Spanish. Public-facing project documentation
-and code use English.
+Documentation and code use English. The specification defines requirements; the
+architecture document records decisions; the checklist links requirements to evidence.
 
 ## Continuous integration
 
@@ -333,7 +349,7 @@ and code use English.
 on pull requests targeting main and pushes to main, using Ubuntu, Node 24 and the
 same PostgreSQL 17 Compose services as local development. It installs from the
 lockfile, checks types/lint, runs unit and integration tests, applies migrations
-twice, then builds and runs Chromium E2E tests. Browser installation follows the
+twice, then builds and runs Chromium E2E and Linux process lifecycle checks. Browser installation follows the
 [Playwright CI instructions](https://playwright.dev/docs/ci).
 
 Database passwords are generated per job for disposable CI databases; no repository
