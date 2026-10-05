@@ -143,8 +143,25 @@ characters after trimming. URLs are normalized with Node's URL parser.
 
 Errors use `{"error":{"code":"INVALID_URL","message":"..."}}`: invalid input
 or malformed JSON returns 400, bodies over 8 KiB return 413, and persistence
-failures return a generic 503 without database details. This local preview has
-no authentication or rate limiting and is not ready for public deployment.
+failures return a generic 503 without database details. Rate-limited creation
+returns 429 with code `RATE_LIMITED`. This local preview has no authentication
+and is not ready for public deployment.
+
+### Request limits
+
+Each client IP can make 30 creation requests and 120 redirect requests per
+60-second window, with independent counters. Rejected and failed attempts also
+count. Excess requests return 429 before body parsing or database access, with
+`Retry-After` (seconds), `RateLimit`, `RateLimit-Policy` and `Cache-Control: no-store`.
+Creation errors use JSON; redirect errors use plain text. Health checks are exempt.
+
+Counters live in memory per application process and reset on restart. IPv6
+addresses share a /56 subnet quota; clients behind the same NAT share a quota.
+Express does not trust proxy headers. Before running behind a reverse proxy,
+configure and test the exact trusted proxy topology; never blindly trust forwarded
+IP headers. Multiple processes need a shared rate-limit store or enforcement at
+the ingress. These limits reduce repeated requests from one client; they do not
+provide distributed denial-of-service protection or destination abuse detection.
 
 Validation regression tests cover incorrect types, empty values, URL length
 boundaries, credentials, disallowed protocols, malformed JSON and oversized
