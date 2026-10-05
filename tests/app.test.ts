@@ -1,6 +1,6 @@
 import { createServer, type Server } from 'node:http';
 import { once } from 'node:events';
-import { afterEach, expect, test } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 import { createApp } from '../src/server/app.js';
 import { createPool } from '../src/server/db.js';
 import type { Pool } from 'pg';
@@ -13,6 +13,8 @@ afterEach(async () => {
     server!.close((error) => error ? reject(error) : resolve());
   });
   await database?.end();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 async function startApp() {
@@ -40,4 +42,51 @@ test('unknown API routes return a JSON 404, not the frontend', async () => {
   expect(await response.json()).toEqual({
     error: { code: 'NOT_FOUND', message: 'API route not found.' },
   });
+});
+
+test.each([
+  { method: 'GET', path: '/r/AbC123xyZ_9-', limit: 120, status: 404 },
+  { method: 'POST', path: '/api/links', limit: 30, status: 201 },
+])('$method $path blocks excess requests before database access and recovers after one minute', async ({ method, path, limit, status }) => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+  const baseUrl = await startApp();
+  const query = vi.spyOn(database!, 'query').mockImplementation(async () => ({ rows: [], rowCount: 1, command: '', oid: 0, fields: [] }));
+  const options = { method, headers: { 'Content-Type': 'application/json' },
+    ...(method === 'POST' ? { body: JSON.stringify({ url: 'https://example.com' }) } : {}) };
+  for (let count = 0; count < limit; count++) {
+    const response = await fetch(`${baseUrl}${path}`, options);
+    expect(response.status).toBe(status);
+    await response.text();
+  }
+  const blocked = await fetch(`${baseUrl}${path}`, {
+    ...options,
+    headers: { ...options.headers, 'X-Forwarded-For': '203.0.113.12', Forwarded: 'for=203.0.113.13' },
+  });
+  expect(blocked.status).toBe(429);
+  expect(blocked.headers.get('cache-control')).toBe('no-store');
+  expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0);
+  expect(blocked.headers.get('ratelimit')).toBeTruthy();
+  if (method === 'POST') {
+    expect(await blocked.json()).toEqual({ error: { code: 'RATE_LIMITED', message: 'Too many requests. Please try again shortly.' } });
+  } else {
+    expect(await blocked.text()).toBe('Too many requests. Please try again shortly.');
+  }
+  expect(query).toHaveBeenCalledTimes(limit);
+  const stillBlocked = await fetch(`${baseUrl}${method === 'GET' ? '/r/AnotherCode1' : path}`, {
+    ...options, ...(method === 'POST' ? { body: '{' } : {}),
+  });
+  expect(stillBlocked.status).toBe(429);
+  await stillBlocked.text();
+  expect(query).toHaveBeenCalledTimes(limit);
+  expect((await fetch(`${baseUrl}/api/health`)).status).toBe(200);
+  const independent = await fetch(`${baseUrl}${method === 'POST' ? '/r/AbC123xyZ_9-' : '/api/links'}`, {
+    method: method === 'POST' ? 'GET' : 'POST',
+  });
+  expect(independent.status).toBe(method === 'POST' ? 404 : 400);
+  await independent.text();
+  vi.setSystemTime(Date.now() + 60_001);
+  const recovered = await fetch(`${baseUrl}${path}`, options);
+  expect(recovered.status).toBe(status);
+  await recovered.text();
 });

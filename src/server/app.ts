@@ -1,4 +1,5 @@
 import express, { type ErrorRequestHandler } from 'express';
+import { rateLimit } from 'express-rate-limit';
 import { randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
 import { createLink, InvalidDestinationError } from './links.js';
@@ -26,10 +27,26 @@ export function createApp({ database, baseUrl }: { database: Pick<Pool, 'query'>
     response.set('Cache-Control', 'no-store').json({ status: 'ok' });
   });
 
-  app.get('/r/:code', async (request, response) => {
+  const redirectLimit = rateLimit({
+    windowMs: 60_000, limit: 120, standardHeaders: 'draft-8', legacyHeaders: false,
+    handler: (_request, response) => {
+      response.set('Cache-Control', 'no-store').status(429).type('text')
+        .send('Too many requests. Please try again shortly.');
+    },
+  });
+  const creationLimit = rateLimit({
+    windowMs: 60_000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false,
+    handler: (_request, response) => {
+      response.set('Cache-Control', 'no-store').status(429).json({
+        error: { code: 'RATE_LIMITED', message: 'Too many requests. Please try again shortly.' },
+      });
+    },
+  });
+
+  app.get('/r/:code', redirectLimit, async (request, response) => {
     response.set('Cache-Control', 'no-store');
     const { code } = request.params;
-    if (!/^[A-Za-z0-9_-]{12}$/.test(code)) {
+    if (typeof code !== 'string' || !/^[A-Za-z0-9_-]{12}$/.test(code)) {
       response.status(404).type('text').send('Short link not found.');
       return;
     }
@@ -48,7 +65,7 @@ export function createApp({ database, baseUrl }: { database: Pick<Pool, 'query'>
     }
   });
 
-  app.post('/api/links', express.json({ limit: '8kb' }), async (request, response) => {
+  app.post('/api/links', creationLimit, express.json({ limit: '8kb' }), async (request, response) => {
     try {
       const body = request.body as { url?: unknown } | undefined;
       const link = await createLink(database, body?.url, baseUrl);
